@@ -825,6 +825,7 @@ function showPage(name) {
   document.getElementById('page-' + name).classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
   if (name === 'lapor-kas') { initSetupBanner(); loadKasData(); }
+  if (name === 'home') { setTimeout(loadHomeStats, 500); }
 }
 
 // ─── TOAST ──────────────────────────────
@@ -1255,6 +1256,10 @@ function renderCashFlow() {
     </tr>`;
   }).join('');
 }
+  // Load home stats after everything is ready
+  setTimeout(function() {
+    if (typeof loadHomeStats === 'function') loadHomeStats();
+  }, 1000);
 </script>
 </body>
 </html>
