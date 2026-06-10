@@ -986,7 +986,11 @@ function showPage(name) {
   document.getElementById('page-' + name).classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
   if (name === 'lapor-kas') { initSetupBanner(); loadKasData(); }
-  if (name === 'absen') { loadPekerjaData().then(() => renderAbsenInput()); }
+  if (name === 'absen') {
+    loadPekerjaData().then(function() {
+      renderAbsenInput();
+    });
+  }
   if (name === 'slip-gaji') { loadPekerjaData().then(() => initSlipGaji()); }
   if (name === 'home') { setTimeout(loadHomeStats, 500); }
 }
@@ -1638,15 +1642,19 @@ async function loadPekerjaData() {
   if (res && res.ok) {
     pekerjaData = res.data || [];
     renderPekerjaList();
-    // Update dropdown
-    const sel = document.getElementById('ab-nama');
-    const current = sel.value;
-    sel.innerHTML = '<option value="">-- Pilih Pekerja --</option>';
-    pekerjaData.forEach(p => {
-      const nama = p.Nama || p.nama || '';
-      sel.innerHTML += '<option value="' + nama + '">' + nama + '</option>';
-    });
-    sel.value = current;
+    // Update slip gaji dropdown if exists
+    const sel = document.getElementById('slip-filter-nama');
+    if (sel) {
+      sel.innerHTML = '<option value="">Semua Pekerja</option>';
+      pekerjaData.forEach(p => {
+        const nama = p.Nama || p.nama || '';
+        sel.innerHTML += '<option value="' + nama + '">' + nama + '</option>';
+      });
+    }
+    // Auto render absen input after data loaded
+    if (document.getElementById('ab-input-tbody')) {
+      renderAbsenInput();
+    }
   }
 }
 
