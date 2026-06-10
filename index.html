@@ -560,6 +560,7 @@
       <div class="menu-card c-teal"   onclick="bukacashflow()"> <div class="card-icon">📊</div><div class="card-title">Cash Flow</div><div class="card-desc">Pantau arus kas dan kondisi keuangan proyek secara real-time.</div><span class="card-tag">Tersedia</span></div>
       <div class="menu-card c-green"  onclick="showPage('absen')">    <div class="card-icon">🕐</div><div class="card-title">Absen</div><div class="card-desc">Rekam kehadiran tim harian dan pantau rekap absensi proyek.</div><span class="card-tag">Tersedia</span></div>
       <div class="menu-card c-red"    onclick="showPage('progress')"> <div class="card-icon">📸</div><div class="card-title">Progress &amp; Foto</div><div class="card-desc">Dokumentasi progres pekerjaan lengkap dengan foto lapangan.</div><span class="card-tag">Tersedia</span></div>
+      <div class="menu-card c-green"   onclick="showPage('slip-gaji')"><div class="card-icon">🧾</div><div class="card-title">Slip Gaji</div><div class="card-desc">Rekap slip gaji mingguan per pekerja secara otomatis.</div><span class="card-tag">Tersedia</span></div>
     </div>
   </div>
   <footer><div class="footer-logo">SCS</div><div>versi 0.2 — powered by Google Sheets</div></footer>
@@ -666,8 +667,8 @@
 <div id="page-absen" class="page">
   <div class="page-header">
     <button class="back-btn" onclick="showPage('home')">&#8592; Kembali</button>
-    <div><div class="page-title">🕐 Absen &amp; Slip Gaji</div>
-    <div class="page-subtitle">Rekam kehadiran &amp; hitung gaji otomatis</div></div>
+    <div><div class="page-title">🕐 Absen Harian</div>
+    <div class="page-subtitle">Rekam kehadiran semua pekerja</div></div>
   </div>
   <div class="kas-body">
 
@@ -680,90 +681,44 @@
 
     <!-- TAB: INPUT ABSEN -->
     <div id="tab-input" class="tab-content active">
-      <div class="absen-grid">
-        <!-- FORM INPUT -->
-        <div class="form-card">
-          <h3>➕ Input Absen Harian</h3>
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Tanggal *</label>
-              <input type="date" id="ab-tanggal">
-            </div>
-            <div class="form-group">
-              <label>Project *</label>
-              <input type="text" id="ab-project" placeholder="Nama project">
-            </div>
-            <div class="form-group full">
-              <label>Nama Pekerja *</label>
-              <select id="ab-nama" onchange="onPekerjaChange()">
-                <option value="">-- Pilih Pekerja --</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Skill / Kelas</label>
-              <input type="text" id="ab-skill" placeholder="Auto dari master" readonly style="background:#f8fbff;">
-            </div>
-            <div class="form-group">
-              <label>Gaji / Hari (Rp)</label>
-              <input type="number" id="ab-gaji" placeholder="0" min="0">
-            </div>
-            <div class="form-group">
-              <label>Jam Datang</label>
-              <input type="time" id="ab-jam-dtg">
-            </div>
-            <div class="form-group">
-              <label>Jam Pulang</label>
-              <input type="time" id="ab-jam-plg" onchange="hitungLembur()">
-            </div>
-            <div class="form-group">
-              <label>Jam Lembur (otomatis)</label>
-              <input type="number" id="ab-lembur" placeholder="0" step="0.5" min="0">
-            </div>
-            <div class="form-group">
-              <label>Tarif Lembur / Jam (Rp)</label>
-              <input type="number" id="ab-tarif-lembur" placeholder="0" min="0">
-            </div>
-            <div class="form-group">
-              <label>Kasbon (Rp)</label>
-              <input type="number" id="ab-kasbon" placeholder="0" min="0">
-            </div>
-            <div class="form-group">
-              <label>Hari Kerja</label>
-              <input type="number" id="ab-hari-kerja" value="1" min="0" max="1">
-            </div>
-            <div class="form-group">
-              <label>Keterangan</label>
-              <input type="text" id="ab-keterangan" placeholder="Opsional">
-            </div>
+      <div class="form-card" style="margin-bottom:16px;">
+        <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+          <div class="form-group" style="flex:1;min-width:160px;">
+            <label>Tanggal *</label>
+            <input type="date" id="ab-tanggal" onchange="renderAbsenInput()">
           </div>
-          <div class="form-actions" style="margin-top:16px;">
-            <button class="btn-save" id="btn-absen-simpan" onclick="simpanAbsen()">💾 Simpan</button>
-            <button class="btn-reset" onclick="resetAbsenForm()">Reset</button>
+          <div class="form-group" style="flex:1;min-width:160px;">
+            <label>Project *</label>
+            <input type="text" id="ab-project" placeholder="Nama project">
           </div>
+          <button class="btn-save" id="btn-absen-simpan" onclick="simpanAbsenBulk()" style="height:40px;margin-bottom:0;">💾 Simpan Semua</button>
         </div>
+      </div>
 
-        <!-- SLIP PREVIEW -->
-        <div>
-          <div class="slip-card">
-            <div class="slip-header">SLIP GAJI HARIAN</div>
-            <div class="slip-body">
-              <div class="slip-row"><span class="slip-label">Nama</span><span class="slip-val" id="slip-nama">-</span></div>
-              <div class="slip-row"><span class="slip-label">Project</span><span class="slip-val" id="slip-project">-</span></div>
-              <div class="slip-row"><span class="slip-label">Kelas / Skill</span><span class="slip-val" id="slip-skill">-</span></div>
-              <div class="slip-row"><span class="slip-label">Tanggal</span><span class="slip-val" id="slip-tanggal">-</span></div>
-              <div class="slip-row"><span class="slip-label">Jam Datang</span><span class="slip-val" id="slip-jam-dtg">-</span></div>
-              <div class="slip-row"><span class="slip-label">Jam Pulang</span><span class="slip-val" id="slip-jam-plg">-</span></div>
-              <div class="slip-row"><span class="slip-label">Hari Kerja</span><span class="slip-val" id="slip-hari">-</span></div>
-              <div class="slip-row"><span class="slip-label">Lembur</span><span class="slip-val" id="slip-lembur">-</span></div>
-              <div class="slip-total">
-                <div class="slip-total-row"><span>Gaji Pokok</span><span id="slip-gaji-pokok">Rp 0</span></div>
-                <div class="slip-total-row"><span>Lembur</span><span id="slip-gaji-lembur">Rp 0</span></div>
-                <div class="slip-total-row"><span>Jumlah</span><span id="slip-jumlah">Rp 0</span></div>
-                <div class="slip-total-row"><span class="slip-kasbon">Kasbon</span><span class="slip-kasbon" id="slip-kasbon">Rp 0</span></div>
-                <div class="slip-total-row"><span>Diterima</span><span id="slip-diterima" style="color:#1E7E34;">Rp 0</span></div>
-              </div>
-            </div>
-          </div>
+      <!-- LIST ABSEN -->
+      <div class="table-card">
+        <div class="table-head">
+          <h3>👷 Daftar Pekerja</h3>
+          <span id="ab-pekerja-count" style="font-size:13px;color:#3A6090;">0 pekerja</span>
+        </div>
+        <div class="table-wrap">
+          <table id="ab-input-table">
+            <thead>
+              <tr>
+                <th style="min-width:140px;">Nama</th>
+                <th>Skill</th>
+                <th style="min-width:90px;">Jam Masuk</th>
+                <th style="min-width:90px;">Jam Pulang</th>
+                <th style="min-width:80px;">Lembur (Jam)</th>
+                <th style="min-width:110px;">Kasbon (Rp)</th>
+                <th>Status</th>
+                <th style="min-width:100px;">Keterangan</th>
+              </tr>
+            </thead>
+            <tbody id="ab-input-tbody">
+              <tr><td colspan="8"><div class="empty-state"><div class="empty-icon">👷</div>Belum ada pekerja. Tambah di tab Master Pekerja.</div></td></tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -785,7 +740,7 @@
         <div class="absen-table-wrap">
           <table>
             <thead>
-              <tr><th>No</th><th>Tanggal</th><th>Nama</th><th>Project</th><th>Skill</th><th>Jam DTG</th><th>Jam PLG</th><th>Lembur</th><th>Hari</th><th>Gaji Pokok</th><th>Lembur (Rp)</th><th>Kasbon</th><th>Diterima</th><th>Ket</th></tr>
+              <tr><th>No</th><th>Tanggal</th><th>Nama</th><th>Project</th><th>Skill</th><th>Jam Masuk</th><th>Jam Pulang</th><th>Lembur</th><th>Status</th><th>Gaji Pokok</th><th>Lembur (Rp)</th><th>Kasbon</th><th>Diterima</th><th>Ket</th></tr>
             </thead>
             <tbody id="ab-tbody">
               <tr><td colspan="14"><div class="empty-state"><div class="empty-icon">🕐</div>Klik Refresh untuk memuat data.</div></td></tr>
@@ -812,45 +767,9 @@
           <button class="btn-reset" onclick="resetPekerjaForm()">Reset</button>
         </div>
       </div>
-
-      <!-- LIST PEKERJA -->
       <div id="list-pekerja"><div class="empty-state"><div class="empty-icon">👷</div>Belum ada data pekerja.</div></div>
     </div>
 
-  </div>
-</div>
-<div id="page-progress" class="page">
-  <div class="page-header"><button class="back-btn" onclick="showPage('home')">&#8592; Kembali</button><div><div class="page-title">📸 Progress &amp; Foto</div><div class="page-subtitle">Segera hadir</div></div></div>
-  <div style="text-align:center;padding:80px 20px;color:#3A6090;"><div style="font-size:48px;margin-bottom:16px;">🚧</div><div style="font-size:18px;font-weight:600;color:#0D2444;margin-bottom:8px;">Halaman Progress &amp; Foto</div><div style="font-size:14px;">Sedang dalam pengembangan.</div></div>
-</div>
-
-<!-- ════════ PILIH KAS PAGE ════════ -->
-<div id="page-pilih-kas" class="page">
-  <div class="page-header">
-    <button class="back-btn" onclick="showPage('home')">&#8592; Kembali</button>
-    <div>
-      <div class="page-title">💰 Lapor Kas</div>
-      <div class="page-subtitle">Pilih kas yang ingin dicatat</div>
-    </div>
-  </div>
-  <div style="padding: 48px 40px;">
-    <div class="kas-picker-grid">
-      <div class="kas-picker-card" onclick="bukaKas('Alif')">
-        <div class="kas-avatar kas-av-alif">AL</div>
-        <div class="kas-name">Kas Alif</div>
-        <div class="kas-desc">Pencatatan kas Alif</div>
-      </div>
-      <div class="kas-picker-card" onclick="bukaKas('Febri')">
-        <div class="kas-avatar kas-av-febri">FB</div>
-        <div class="kas-name">Kas Febri</div>
-        <div class="kas-desc">Pencatatan kas Febri</div>
-      </div>
-      <div class="kas-picker-card" onclick="bukaKas('Maya')">
-        <div class="kas-avatar kas-av-maya">MY</div>
-        <div class="kas-name">Kas Maya</div>
-        <div class="kas-desc">Pencatatan kas Maya</div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -926,6 +845,44 @@
   </div>
 </div>
 
+<!-- ════════ SLIP GAJI PAGE ════════ -->
+<div id="page-slip-gaji" class="page">
+  <div class="page-header">
+    <button class="back-btn" onclick="showPage('home')">&#8592; Kembali</button>
+    <div><div class="page-title">🧾 Slip Gaji Mingguan</div>
+    <div class="page-subtitle">Rekap gaji per pekerja per minggu</div></div>
+  </div>
+  <div class="kas-body">
+
+    <!-- FILTER -->
+    <div class="form-card" style="margin-bottom:20px;">
+      <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
+        <div class="form-group" style="flex:1;min-width:140px;">
+          <label>Tanggal Mulai</label>
+          <input type="date" id="slip-tgl-mulai">
+        </div>
+        <div class="form-group" style="flex:1;min-width:140px;">
+          <label>Tanggal Selesai</label>
+          <input type="date" id="slip-tgl-selesai">
+        </div>
+        <div class="form-group" style="flex:1;min-width:140px;">
+          <label>Nama Pekerja</label>
+          <select id="slip-filter-nama">
+            <option value="">Semua Pekerja</option>
+          </select>
+        </div>
+        <button class="btn-save" onclick="loadSlipGaji()" style="height:40px;">🔄 Tampilkan</button>
+      </div>
+    </div>
+
+    <!-- SLIP CARDS -->
+    <div id="slip-container">
+      <div class="empty-state"><div class="empty-icon">🧾</div>Pilih periode dan klik Tampilkan.</div>
+    </div>
+
+  </div>
+</div>
+
 <!-- LOGIN MODAL -->
 <div class="modal-overlay" id="loginModal" onclick="if(event.target===this)this.classList.remove('active')">
   <div class="modal">
@@ -951,7 +908,7 @@
 // ═══════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════
-let SCRIPT_URL = localStorage.getItem('scs-script-url') || 'https://script.google.com/macros/s/AKfycbxZkpM2-jY3shBjioWDbrePngVnfb1D_cIwDYxCiqVLaDbsvG6thSLCnQW3NpnY-xwKxQ/exec';
+let SCRIPT_URL = localStorage.getItem('scs-script-url') || 'https://script.google.com/macros/s/AKfycbwrrA2n5usa4nsgZzCor38xMgc05CwIJjo9dKUMwEg-hiadQSL-eEx-Q32ChCWG1dZQNA/exec';
 let kasData    = [];
 
 // ─── SETUP BANNER ───────────────────────
@@ -1029,7 +986,8 @@ function showPage(name) {
   document.getElementById('page-' + name).classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
   if (name === 'lapor-kas') { initSetupBanner(); loadKasData(); }
-  if (name === 'absen') { loadPekerjaData(); }
+  if (name === 'absen') { loadPekerjaData().then(() => renderAbsenInput()); }
+  if (name === 'slip-gaji') { loadPekerjaData().then(() => initSlipGaji()); }
   if (name === 'home') { setTimeout(loadHomeStats, 500); }
 }
 
@@ -1466,11 +1424,135 @@ function renderCashFlow() {
     if (typeof loadHomeStats === 'function') loadHomeStats();
   }, 1000);
 
+// ─── SLIP GAJI ──────────────────────────
+function initSlipGaji() {
+  // Set default minggu ini
+  const today = new Date();
+  const day = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  document.getElementById('slip-tgl-mulai').value  = monday.toISOString().split('T')[0];
+  document.getElementById('slip-tgl-selesai').value = sunday.toISOString().split('T')[0];
+
+  // Fill pekerja dropdown
+  const sel = document.getElementById('slip-filter-nama');
+  sel.innerHTML = '<option value="">Semua Pekerja</option>';
+  pekerjaData.forEach(p => {
+    const nama = p.Nama || p.nama || '';
+    sel.innerHTML += '<option value="' + nama + '">' + nama + '</option>';
+  });
+}
+
+async function loadSlipGaji() {
+  const tglMulai   = document.getElementById('slip-tgl-mulai').value;
+  const tglSelesai = document.getElementById('slip-tgl-selesai').value;
+  const filterNama = document.getElementById('slip-filter-nama').value;
+
+  if (!tglMulai || !tglSelesai) { showToast('Pilih periode dulu', 'error'); return; }
+
+  showToast('🔄 Memuat data...');
+  const res = await apiCall({action:'getAbsen'});
+  if (!res || !res.ok) { showToast('Gagal memuat data', 'error'); return; }
+
+  let data = (res.data || []).filter(r => {
+    const tgl = (r.Tanggal || r.tanggal || '').toString().substring(0,10);
+    const nama = r.Nama || r.nama || '';
+    const inRange = tgl >= tglMulai && tgl <= tglSelesai;
+    const namaMatch = !filterNama || nama === filterNama;
+    return inRange && namaMatch;
+  });
+
+  // Group by nama
+  const byNama = {};
+  data.forEach(r => {
+    const nama = r.Nama || r.nama || '-';
+    if (!byNama[nama]) byNama[nama] = [];
+    byNama[nama].push(r);
+  });
+
+  const container = document.getElementById('slip-container');
+  if (!Object.keys(byNama).length) {
+    container.innerHTML = '<div class="empty-state"><div class="empty-icon">🧾</div>Tidak ada data untuk periode ini.</div>';
+    return;
+  }
+
+  container.innerHTML = Object.keys(byNama).map(nama => {
+    const rows = byNama[nama];
+    const p = pekerjaData.find(pk => (pk.Nama||pk.nama) === nama) || {};
+    const gaji  = Number(p.GajiHari  || p.gajiHari  || 0);
+    const tarif = Number(p.LemburJam || p.lemburJam || 0);
+    const skill = p.Skill || p.skill || rows[0].Skill || '-';
+
+    let totalHari=0, totalLembur=0, totalKasbon=0;
+    rows.forEach(r => {
+      totalHari   += Number(r.HariKerja || r.hariKerja || 0);
+      totalLembur += Number(r.Lembur    || r.lembur    || 0);
+      totalKasbon += Number(r.Kasbon    || r.kasbon    || 0);
+    });
+    const pokok    = gaji * totalHari;
+    const lemburRp = tarif * totalLembur;
+    const jumlah   = pokok + lemburRp;
+    const diterima = jumlah - totalKasbon;
+    const inisial  = nama.substring(0,2).toUpperCase();
+
+    const detailRows = rows.map(r => {
+      const tgl    = formatDate(r.Tanggal || r.tanggal);
+      const status = r.Status || r.status || 'Hadir';
+      const hari   = Number(r.HariKerja || r.hariKerja || 0);
+      const lmb    = Number(r.Lembur || r.lembur || 0);
+      const ksb    = Number(r.Kasbon || r.kasbon || 0);
+      const dtg    = r.JamDtg || r.jamDtg || '-';
+      const plg    = r.JamPlg || r.jamPlg || '-';
+      const color  = status === 'Hadir' ? '#D4EDDA' : status === 'Sakit' ? '#FFF3CD' : '#F8D7DA';
+      return '<tr style="background:' + color + ';font-size:12px;">' +
+        '<td style="padding:6px 12px;">' + tgl + '</td>' +
+        '<td style="padding:6px 12px;">' + dtg + '</td>' +
+        '<td style="padding:6px 12px;">' + plg + '</td>' +
+        '<td style="padding:6px 12px;text-align:center;">' + hari + '</td>' +
+        '<td style="padding:6px 12px;text-align:center;">' + lmb + '</td>' +
+        '<td style="padding:6px 12px;text-align:right;color:#C62828;">' + formatRp(ksb) + '</td>' +
+        '<td style="padding:6px 12px;"><span style="font-size:11px;padding:2px 8px;border-radius:10px;background:rgba(0,0,0,0.08);">' + status + '</span></td>' +
+        '</tr>';
+    }).join('');
+
+    return '<div class="slip-card" style="margin-bottom:20px;">' +
+      '<div class="slip-header" style="display:flex;align-items:center;gap:12px;padding:14px 20px;">' +
+        '<div style="width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-weight:700;">' + inisial + '</div>' +
+        '<div><div>' + nama + '</div><div style="font-size:12px;opacity:0.8;">' + skill + ' &nbsp;·&nbsp; ' + tglMulai + ' s/d ' + tglSelesai + '</div></div>' +
+      '</div>' +
+      '<div style="overflow-x:auto;">' +
+        '<table style="width:100%;border-collapse:collapse;font-size:13px;">' +
+          '<thead><tr style="background:#EEF4FB;">' +
+            '<th style="padding:8px 12px;text-align:left;font-size:11px;color:#3A6090;">Tanggal</th>' +
+            '<th style="padding:8px 12px;text-align:left;font-size:11px;color:#3A6090;">Jam DTG</th>' +
+            '<th style="padding:8px 12px;text-align:left;font-size:11px;color:#3A6090;">Jam PLG</th>' +
+            '<th style="padding:8px 12px;text-align:center;font-size:11px;color:#3A6090;">Hari</th>' +
+            '<th style="padding:8px 12px;text-align:center;font-size:11px;color:#3A6090;">Lembur</th>' +
+            '<th style="padding:8px 12px;text-align:right;font-size:11px;color:#3A6090;">Kasbon</th>' +
+            '<th style="padding:8px 12px;font-size:11px;color:#3A6090;">Status</th>' +
+          '</tr></thead>' +
+          '<tbody>' + detailRows + '</tbody>' +
+        '</table>' +
+      '</div>' +
+      '<div class="slip-total" style="margin:0;border-radius:0;border-top:1px solid rgba(26,115,200,0.1);">' +
+        '<div class="slip-total-row"><span>Gaji Pokok (' + totalHari + ' hari × ' + formatRp(gaji) + ')</span><span>' + formatRp(pokok) + '</span></div>' +
+        '<div class="slip-total-row"><span>Lembur (' + totalLembur + ' jam × ' + formatRp(tarif) + ')</span><span>' + formatRp(lemburRp) + '</span></div>' +
+        '<div class="slip-total-row"><span>Jumlah</span><span>' + formatRp(jumlah) + '</span></div>' +
+        '<div class="slip-total-row"><span class="slip-kasbon">Total Kasbon</span><span class="slip-kasbon">' + formatRp(totalKasbon) + '</span></div>' +
+        '<div class="slip-total-row" style="border-top:1px solid rgba(26,115,200,0.15);padding-top:8px;margin-top:4px;"><span>💰 Total Diterima</span><span style="color:#1E7E34;font-size:16px;">' + formatRp(diterima) + '</span></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
 // ═══════════════════════════════════════
 //  ABSEN & SLIP GAJI
 // ═══════════════════════════════════════
 let absenData   = [];
 let pekerjaData = [];
+let absenInputRows = []; // rows state for bulk input
 
 // ─── TAB ────────────────────────────────
 function switchAbsenTab(name, el) {
@@ -1673,52 +1755,85 @@ function renderAbsenTable() {
   }).join('');
 }
 
-async function simpanAbsen() {
-  const tanggal  = document.getElementById('ab-tanggal').value;
-  const nama     = document.getElementById('ab-nama').value;
-  const project  = document.getElementById('ab-project').value.trim();
-  const skill    = document.getElementById('ab-skill').value;
-  const gaji     = document.getElementById('ab-gaji').value;
-  const jamDtg   = document.getElementById('ab-jam-dtg').value;
-  const jamPlg   = document.getElementById('ab-jam-plg').value;
-  const lembur   = document.getElementById('ab-lembur').value || 0;
-  const tarifLmb = document.getElementById('ab-tarif-lembur').value || 0;
-  const kasbon   = document.getElementById('ab-kasbon').value || 0;
-  const hariKerja= document.getElementById('ab-hari-kerja').value || 1;
-  const ket      = document.getElementById('ab-keterangan').value.trim();
-
-  if (!tanggal || !nama || !project || !gaji) {
-    showToast('Isi tanggal, nama, project, dan gaji', 'error'); return;
+// ─── RENDER BULK INPUT ──────────────────
+function renderAbsenInput() {
+  const tbody = document.getElementById('ab-input-tbody');
+  if (!pekerjaData.length) {
+    tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">👷</div>Belum ada pekerja. Tambah di tab Master Pekerja.</div></td></tr>';
+    document.getElementById('ab-pekerja-count').textContent = '0 pekerja';
+    return;
   }
+  document.getElementById('ab-pekerja-count').textContent = pekerjaData.length + ' pekerja';
+  tbody.innerHTML = pekerjaData.map((p, i) => {
+    const nama  = p.Nama  || p.nama  || '';
+    const skill = p.Skill || p.skill || '';
+    const gaji  = Number(p.GajiHari  || p.gajiHari  || p.gaji   || 0);
+    const tarif = Number(p.LemburJam || p.lemburJam || p.lembur || 0);
+    return `<tr style="border-bottom:1px solid rgba(26,115,200,0.08);">
+      <td style="font-weight:600;color:#0D2444;padding:10px 14px;">${nama}<br><span style="font-size:11px;color:#3A6090;">${formatRp(gaji)}/hari · Lembur ${formatRp(tarif)}/jam</span></td>
+      <td style="font-size:12px;color:#3A6090;padding:10px 14px;">${skill}</td>
+      <td style="padding:8px;"><input type="time" id="ab-dtg-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="07:00"></td>
+      <td style="padding:8px;"><input type="time" id="ab-plg-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="16:00"></td>
+      <td style="padding:8px;"><input type="number" id="ab-lemb-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="0" min="0" step="0.5"></td>
+      <td style="padding:8px;"><input type="number" id="ab-kasbon-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="0" min="0"></td>
+      <td style="padding:8px;">
+        <select id="ab-status-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;">
+          <option value="Hadir">Hadir</option>
+          <option value="Tidak Masuk">Tidak Masuk</option>
+          <option value="Izin">Izin</option>
+          <option value="Sakit">Sakit</option>
+        </select>
+      </td>
+      <td style="padding:8px;"><input type="text" id="ab-ket-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" placeholder="Opsional"></td>
+    </tr>`;
+  }).join('');
+}
+
+// ─── SIMPAN BULK ────────────────────────
+async function simpanAbsenBulk() {
+  const tanggal = document.getElementById('ab-tanggal').value;
+  const project = document.getElementById('ab-project').value.trim();
+  if (!tanggal || !project) { showToast('Isi tanggal dan project dulu', 'error'); return; }
+  if (!pekerjaData.length) { showToast('Belum ada pekerja', 'error'); return; }
 
   const btn = document.getElementById('btn-absen-simpan');
   btn.innerHTML = '<span class="spinner"></span> Menyimpan...';
   btn.disabled = true;
 
-  const res = await apiCall({
-    action:'addAbsenSlip', tanggal, nama, project, skill,
-    gaji, jamDtg, jamPlg, lembur, tarifLembur: tarifLmb,
-    kasbon, hariKerja, keterangan: ket
-  });
+  let sukses = 0, gagal = 0;
+  for (let i = 0; i < pekerjaData.length; i++) {
+    const p      = pekerjaData[i];
+    const nama   = p.Nama || p.nama || '';
+    const skill  = p.Skill || p.skill || '';
+    const gaji   = Number(p.GajiHari || p.gajiHari || p.gaji || 0);
+    const tarif  = Number(p.LemburJam || p.lemburJam || p.lembur || 0);
+    const status = document.getElementById('ab-status-' + i)?.value || 'Hadir';
+    const jamDtg = document.getElementById('ab-dtg-' + i)?.value || '';
+    const jamPlg = document.getElementById('ab-plg-' + i)?.value || '';
+    const lembur = Number(document.getElementById('ab-lemb-' + i)?.value) || 0;
+    const kasbon = Number(document.getElementById('ab-kasbon-' + i)?.value) || 0;
+    const ket    = document.getElementById('ab-ket-' + i)?.value || '';
+    const hari   = status === 'Hadir' ? 1 : 0;
 
-  btn.innerHTML = '💾 Simpan'; btn.disabled = false;
-  if (res && res.ok) {
-    showToast('✅ Absen berhasil disimpan!', 'success');
-    resetAbsenForm();
-  } else {
-    showToast('Gagal menyimpan', 'error');
+    const res = await apiCall({
+      action:'addAbsenSlip', tanggal, nama, project, skill,
+      gaji, jamDtg, jamPlg, lembur, tarifLembur: tarif,
+      kasbon, hariKerja: hari, status, keterangan: ket
+    });
+    if (res && res.ok) sukses++; else gagal++;
   }
+
+  btn.innerHTML = '💾 Simpan Semua'; btn.disabled = false;
+  if (sukses > 0) {
+    showToast('✅ ' + sukses + ' data absen tersimpan!', 'success');
+  }
+  if (gagal > 0) showToast(gagal + ' data gagal', 'error');
 }
 
 function resetAbsenForm() {
-  ['ab-project','ab-skill','ab-gaji','ab-jam-dtg','ab-jam-plg',
-   'ab-lembur','ab-tarif-lembur','ab-kasbon','ab-keterangan'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
-  document.getElementById('ab-hari-kerja').value = '1';
   document.getElementById('ab-tanggal').value = new Date().toISOString().split('T')[0];
-  updateSlipPreview();
+  document.getElementById('ab-project').value = '';
+  renderAbsenInput();
 }
 
 // Init absen date
