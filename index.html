@@ -1097,10 +1097,12 @@ function previewFoto(event) {
 }
 
 function hapusFoto(e) {
-  e.stopPropagation();
+  if (e && e.stopPropagation) e.stopPropagation();
   fotoBase64 = '';
-  document.getElementById('kas-foto').value = '';
-  document.getElementById('foto-preview-wrap').innerHTML = '<div class="foto-placeholder">📷 Klik untuk upload foto nota</div>';
+  const fotoInput = document.getElementById('kas-foto');
+  if (fotoInput) fotoInput.value = '';
+  const preview = document.getElementById('foto-preview-wrap');
+  if (preview) preview.innerHTML = '<div class="foto-placeholder">📷 Klik untuk upload foto nota</div>';
 }
 
 // ─── CASH FLOW ──────────────────────────────────────────
