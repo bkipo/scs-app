@@ -1006,6 +1006,7 @@ async function tambahKas() {
   const btn = document.getElementById('btn-simpan');
   btn.innerHTML = '<span class="spinner"></span> Menyimpan...';
   btn.classList.add('loading');
+  btn.disabled = true;
 
   if (SCRIPT_URL) {
     const res = await apiCall({action:'addLaporKas',kasNama:activeKas,tanggal,jenis,kategori,jumlah,uraian,nota,oleh,fotoBase64:fotoBase64.substring(0,50000)});
@@ -1029,6 +1030,7 @@ async function tambahKas() {
 
   btn.innerHTML = '💾 Simpan';
   btn.classList.remove('loading');
+  btn.disabled = false;
 }
 
 // ─── HAPUS KAS ──────────────────────────
