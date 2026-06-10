@@ -415,6 +415,62 @@
   .kas-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
   .kas-tab:hover:not(.active) { background: rgba(26,115,200,0.07); }
 
+/* ABSEN PAGE */
+  .absen-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+  @media (max-width:640px) { .absen-grid { grid-template-columns: 1fr; } }
+  .slip-card {
+    background: #fff; border: 1px solid rgba(26,115,200,0.13);
+    border-radius: 14px; overflow: hidden;
+  }
+  .slip-header {
+    background: #0D2444; color: #fff;
+    padding: 14px 20px; text-align: center;
+    font-family: 'Syne',sans-serif; font-size: 15px; font-weight: 700;
+  }
+  .slip-body { padding: 16px 20px; }
+  .slip-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 7px 0; border-bottom: 1px solid rgba(26,115,200,0.07);
+    font-size: 13px;
+  }
+  .slip-row:last-child { border-bottom: none; }
+  .slip-label { color: #3A6090; }
+  .slip-val { font-weight: 600; color: #0D2444; }
+  .slip-total { background: #EEF4FB; border-radius: 8px; padding: 12px 16px; margin-top: 12px; }
+  .slip-total-row { display: flex; justify-content: space-between; font-size: 14px; margin-bottom: 6px; }
+  .slip-total-row:last-child { margin-bottom: 0; font-weight: 700; font-size: 15px; color: #1A73C8; }
+  .slip-kasbon { color: #C62828 !important; }
+  .absen-table-wrap { overflow-x: auto; }
+  .worker-card {
+    background: #fff; border: 1px solid rgba(26,115,200,0.13);
+    border-radius: 12px; padding: 16px;
+    display: flex; align-items: center; gap: 14px;
+    margin-bottom: 10px; cursor: pointer; transition: all 0.2s;
+  }
+  .worker-card:hover { border-color: var(--accent); transform: translateY(-1px); }
+  .worker-avatar {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(26,115,200,0.12); color: #1A73C8;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne',sans-serif; font-weight: 700; font-size: 16px;
+    flex-shrink: 0;
+  }
+  .worker-name { font-family: 'Syne',sans-serif; font-weight: 700; font-size: 14px; color: #0D2444; }
+  .worker-meta { font-size: 12px; color: #3A6090; margin-top: 2px; }
+  .worker-gaji { margin-left: auto; text-align: right; }
+  .worker-gaji .gaji-val { font-family: 'Syne',sans-serif; font-weight: 700; font-size: 13px; color: #1E7E34; }
+  .worker-gaji .gaji-label { font-size: 11px; color: #3A6090; }
+  .tab-menu { display: flex; gap: 0; margin-bottom: 20px; border-radius: 10px; overflow: hidden; border: 1px solid rgba(26,115,200,0.15); }
+  .tab-item {
+    flex: 1; padding: 11px; text-align: center; cursor: pointer;
+    font-size: 13px; font-weight: 500; background: #fff; color: #3A6090;
+    transition: all 0.18s; border-right: 1px solid rgba(26,115,200,0.1);
+  }
+  .tab-item:last-child { border-right: none; }
+  .tab-item.active { background: #1A73C8; color: #fff; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
 /* TOAST */
 .toast {
   position: fixed; bottom: 28px; left: 50%; transform: translateX(-50%) translateY(80px);
@@ -482,7 +538,7 @@
     <img src="data:image/jpeg;base64,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" alt="SCS" style="height:36px;object-fit:contain;">
   </div>
   <div class="nav-right">
-    <button class="btn-ghost" onclick="document.getElementById('loginModal').classList.add('active')">Masuk dengan Google</button>
+    
   </div>
 </nav>
 
@@ -492,14 +548,9 @@
     <div class="hero-badge"><div class="badge-dot"></div> SCS — Shine Creative Solution</div>
     <h1>Kelola <span>Proyek</span> &amp;<br>Tugas Tim Kamu</h1>
     <p>Pantau progres, atur deadline, dan kolaborasi tim dalam satu platform yang simpel dan cepat.</p>
-    <button class="btn-big" onclick="document.getElementById('menu').scrollIntoView({behavior:'smooth'})">Buka Menu Utama</button>
+    
   </div>
-  <div class="stats">
-    <div class="stat-item"><div class="stat-num" id="stat-kas">0 <span>Kas</span></div><div class="stat-label">Transaksi dicatat</div></div>
-    <div class="stat-item"><div class="stat-num" id="stat-absen">0 <span>Absen</span></div><div class="stat-label">Data kehadiran</div></div>
-    <div class="stat-item"><div class="stat-num" id="stat-schedule">0 <span>Jadwal</span></div><div class="stat-label">Kegiatan terjadwal</div></div>
-    <div class="stat-item"><div class="stat-num" id="stat-progress">0 <span>Item</span></div><div class="stat-label">Progress dipantau</div></div>
-  </div>
+
   <div class="section" id="menu">
     <div class="section-head"><h2>Menu Utama</h2><p>Pilih fitur yang ingin kamu gunakan</p></div>
     <div class="menu-grid">
@@ -611,9 +662,162 @@
   <div style="text-align:center;padding:80px 20px;color:#3A6090;"><div style="font-size:48px;margin-bottom:16px;">🚧</div><div style="font-size:18px;font-weight:600;color:#0D2444;margin-bottom:8px;">Halaman Gambar</div><div style="font-size:14px;">Sedang dalam pengembangan.</div></div>
 </div>
 
+<!-- ════════ ABSEN PAGE ════════ -->
 <div id="page-absen" class="page">
-  <div class="page-header"><button class="back-btn" onclick="showPage('home')">&#8592; Kembali</button><div><div class="page-title">🕐 Absen</div><div class="page-subtitle">Segera hadir</div></div></div>
-  <div style="text-align:center;padding:80px 20px;color:#3A6090;"><div style="font-size:48px;margin-bottom:16px;">🚧</div><div style="font-size:18px;font-weight:600;color:#0D2444;margin-bottom:8px;">Halaman Absen</div><div style="font-size:14px;">Sedang dalam pengembangan.</div></div>
+  <div class="page-header">
+    <button class="back-btn" onclick="showPage('home')">&#8592; Kembali</button>
+    <div><div class="page-title">🕐 Absen &amp; Slip Gaji</div>
+    <div class="page-subtitle">Rekam kehadiran &amp; hitung gaji otomatis</div></div>
+  </div>
+  <div class="kas-body">
+
+    <!-- TABS -->
+    <div class="tab-menu">
+      <div class="tab-item active" onclick="switchAbsenTab('input',this)">📋 Input Absen</div>
+      <div class="tab-item" onclick="switchAbsenTab('rekap',this)">📊 Rekap Absen</div>
+      <div class="tab-item" onclick="switchAbsenTab('pekerja',this)">👷 Master Pekerja</div>
+    </div>
+
+    <!-- TAB: INPUT ABSEN -->
+    <div id="tab-input" class="tab-content active">
+      <div class="absen-grid">
+        <!-- FORM INPUT -->
+        <div class="form-card">
+          <h3>➕ Input Absen Harian</h3>
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Tanggal *</label>
+              <input type="date" id="ab-tanggal">
+            </div>
+            <div class="form-group">
+              <label>Project *</label>
+              <input type="text" id="ab-project" placeholder="Nama project">
+            </div>
+            <div class="form-group full">
+              <label>Nama Pekerja *</label>
+              <select id="ab-nama" onchange="onPekerjaChange()">
+                <option value="">-- Pilih Pekerja --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Skill / Kelas</label>
+              <input type="text" id="ab-skill" placeholder="Auto dari master" readonly style="background:#f8fbff;">
+            </div>
+            <div class="form-group">
+              <label>Gaji / Hari (Rp)</label>
+              <input type="number" id="ab-gaji" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label>Jam Datang</label>
+              <input type="time" id="ab-jam-dtg">
+            </div>
+            <div class="form-group">
+              <label>Jam Pulang</label>
+              <input type="time" id="ab-jam-plg" onchange="hitungLembur()">
+            </div>
+            <div class="form-group">
+              <label>Jam Lembur (otomatis)</label>
+              <input type="number" id="ab-lembur" placeholder="0" step="0.5" min="0">
+            </div>
+            <div class="form-group">
+              <label>Tarif Lembur / Jam (Rp)</label>
+              <input type="number" id="ab-tarif-lembur" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label>Kasbon (Rp)</label>
+              <input type="number" id="ab-kasbon" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label>Hari Kerja</label>
+              <input type="number" id="ab-hari-kerja" value="1" min="0" max="1">
+            </div>
+            <div class="form-group">
+              <label>Keterangan</label>
+              <input type="text" id="ab-keterangan" placeholder="Opsional">
+            </div>
+          </div>
+          <div class="form-actions" style="margin-top:16px;">
+            <button class="btn-save" id="btn-absen-simpan" onclick="simpanAbsen()">💾 Simpan</button>
+            <button class="btn-reset" onclick="resetAbsenForm()">Reset</button>
+          </div>
+        </div>
+
+        <!-- SLIP PREVIEW -->
+        <div>
+          <div class="slip-card">
+            <div class="slip-header">SLIP GAJI HARIAN</div>
+            <div class="slip-body">
+              <div class="slip-row"><span class="slip-label">Nama</span><span class="slip-val" id="slip-nama">-</span></div>
+              <div class="slip-row"><span class="slip-label">Project</span><span class="slip-val" id="slip-project">-</span></div>
+              <div class="slip-row"><span class="slip-label">Kelas / Skill</span><span class="slip-val" id="slip-skill">-</span></div>
+              <div class="slip-row"><span class="slip-label">Tanggal</span><span class="slip-val" id="slip-tanggal">-</span></div>
+              <div class="slip-row"><span class="slip-label">Jam Datang</span><span class="slip-val" id="slip-jam-dtg">-</span></div>
+              <div class="slip-row"><span class="slip-label">Jam Pulang</span><span class="slip-val" id="slip-jam-plg">-</span></div>
+              <div class="slip-row"><span class="slip-label">Hari Kerja</span><span class="slip-val" id="slip-hari">-</span></div>
+              <div class="slip-row"><span class="slip-label">Lembur</span><span class="slip-val" id="slip-lembur">-</span></div>
+              <div class="slip-total">
+                <div class="slip-total-row"><span>Gaji Pokok</span><span id="slip-gaji-pokok">Rp 0</span></div>
+                <div class="slip-total-row"><span>Lembur</span><span id="slip-gaji-lembur">Rp 0</span></div>
+                <div class="slip-total-row"><span>Jumlah</span><span id="slip-jumlah">Rp 0</span></div>
+                <div class="slip-total-row"><span class="slip-kasbon">Kasbon</span><span class="slip-kasbon" id="slip-kasbon">Rp 0</span></div>
+                <div class="slip-total-row"><span>Diterima</span><span id="slip-diterima" style="color:#1E7E34;">Rp 0</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: REKAP -->
+    <div id="tab-rekap" class="tab-content">
+      <div class="table-card">
+        <div class="table-head">
+          <h3>📋 Rekap Absen</h3>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <span id="ab-count" style="font-size:13px;color:#3A6090;">0 data</span>
+            <button onclick="loadAbsenData()" style="background:none;border:1px solid rgba(26,115,200,0.2);color:#1A73C8;padding:5px 10px;border-radius:6px;font-size:12px;cursor:pointer;">🔄 Refresh</button>
+          </div>
+        </div>
+        <div class="filter-row">
+          <input type="text" id="ab-filter-nama" placeholder="🔍 Cari nama..." oninput="renderAbsenTable()" style="flex:1;">
+          <input type="date" id="ab-filter-tgl" onchange="renderAbsenTable()">
+        </div>
+        <div class="absen-table-wrap">
+          <table>
+            <thead>
+              <tr><th>No</th><th>Tanggal</th><th>Nama</th><th>Project</th><th>Skill</th><th>Jam DTG</th><th>Jam PLG</th><th>Lembur</th><th>Hari</th><th>Gaji Pokok</th><th>Lembur (Rp)</th><th>Kasbon</th><th>Diterima</th><th>Ket</th></tr>
+            </thead>
+            <tbody id="ab-tbody">
+              <tr><td colspan="14"><div class="empty-state"><div class="empty-icon">🕐</div>Klik Refresh untuk memuat data.</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB: MASTER PEKERJA -->
+    <div id="tab-pekerja" class="tab-content">
+      <div class="form-card" style="margin-bottom:20px;">
+        <h3>➕ Tambah / Edit Pekerja</h3>
+        <div class="form-grid">
+          <div class="form-group"><label>Nama Pekerja *</label><input type="text" id="pk-nama" placeholder="Nama lengkap"></div>
+          <div class="form-group"><label>Skill / Kelas *</label><input type="text" id="pk-skill" placeholder="Mandor, Tukang, Helper..."></div>
+          <div class="form-group"><label>Gaji / Hari (Rp) *</label><input type="number" id="pk-gaji" placeholder="0" min="0"></div>
+          <div class="form-group"><label>Lembur / Jam (Rp) *</label><input type="number" id="pk-lembur" placeholder="0" min="0"></div>
+          <div class="form-group"><label>No. HP</label><input type="text" id="pk-hp" placeholder="08xx..."></div>
+          <div class="form-group"><label>Keterangan</label><input type="text" id="pk-ket" placeholder="Opsional"></div>
+        </div>
+        <div class="form-actions" style="margin-top:16px;">
+          <button class="btn-save" id="btn-pk-simpan" onclick="simpanPekerja()">💾 Simpan Pekerja</button>
+          <button class="btn-reset" onclick="resetPekerjaForm()">Reset</button>
+        </div>
+      </div>
+
+      <!-- LIST PEKERJA -->
+      <div id="list-pekerja"><div class="empty-state"><div class="empty-icon">👷</div>Belum ada data pekerja.</div></div>
+    </div>
+
+  </div>
 </div>
 <div id="page-progress" class="page">
   <div class="page-header"><button class="back-btn" onclick="showPage('home')">&#8592; Kembali</button><div><div class="page-title">📸 Progress &amp; Foto</div><div class="page-subtitle">Segera hadir</div></div></div>
@@ -747,7 +951,7 @@
 // ═══════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════
-let SCRIPT_URL = localStorage.getItem('scs-script-url') || 'https://script.google.com/macros/s/AKfycbzchwBtXY2A-6upM3uwo2TwxAExBOG_5seMgSBZmnhLuXNjnasUXiX3sUj8K8jVlM5Wzw/exec';
+let SCRIPT_URL = localStorage.getItem('scs-script-url') || 'https://script.google.com/macros/s/AKfycbxZkpM2-jY3shBjioWDbrePngVnfb1D_cIwDYxCiqVLaDbsvG6thSLCnQW3NpnY-xwKxQ/exec';
 let kasData    = [];
 
 // ─── SETUP BANNER ───────────────────────
@@ -825,6 +1029,7 @@ function showPage(name) {
   document.getElementById('page-' + name).classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
   if (name === 'lapor-kas') { initSetupBanner(); loadKasData(); }
+  if (name === 'absen') { loadPekerjaData(); }
   if (name === 'home') { setTimeout(loadHomeStats, 500); }
 }
 
@@ -1260,6 +1465,266 @@ function renderCashFlow() {
   setTimeout(function() {
     if (typeof loadHomeStats === 'function') loadHomeStats();
   }, 1000);
+
+// ═══════════════════════════════════════
+//  ABSEN & SLIP GAJI
+// ═══════════════════════════════════════
+let absenData   = [];
+let pekerjaData = [];
+
+// ─── TAB ────────────────────────────────
+function switchAbsenTab(name, el) {
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'rekap') loadAbsenData();
+  if (name === 'pekerja') loadPekerjaData();
+}
+
+// ─── SLIP PREVIEW ───────────────────────
+function updateSlipPreview() {
+  const nama     = document.getElementById('ab-nama').value;
+  const project  = document.getElementById('ab-project').value || '-';
+  const skill    = document.getElementById('ab-skill').value || '-';
+  const tanggal  = document.getElementById('ab-tanggal').value;
+  const jamDtg   = document.getElementById('ab-jam-dtg').value || '-';
+  const jamPlg   = document.getElementById('ab-jam-plg').value || '-';
+  const hari     = Number(document.getElementById('ab-hari-kerja').value) || 0;
+  const gaji     = Number(document.getElementById('ab-gaji').value) || 0;
+  const lembur   = Number(document.getElementById('ab-lembur').value) || 0;
+  const tarifLmb = Number(document.getElementById('ab-tarif-lembur').value) || 0;
+  const kasbon   = Number(document.getElementById('ab-kasbon').value) || 0;
+
+  const gajiPokok  = gaji * hari;
+  const gajiLembur = lembur * tarifLmb;
+  const jumlah     = gajiPokok + gajiLembur;
+  const diterima   = jumlah - kasbon;
+
+  document.getElementById('slip-nama').textContent    = nama || '-';
+  document.getElementById('slip-project').textContent = project;
+  document.getElementById('slip-skill').textContent   = skill;
+  document.getElementById('slip-tanggal').textContent = tanggal ? formatDate(tanggal) : '-';
+  document.getElementById('slip-jam-dtg').textContent = jamDtg;
+  document.getElementById('slip-jam-plg').textContent = jamPlg;
+  document.getElementById('slip-hari').textContent    = hari + ' hari';
+  document.getElementById('slip-lembur').textContent  = lembur + ' jam';
+  document.getElementById('slip-gaji-pokok').textContent = formatRp(gajiPokok);
+  document.getElementById('slip-gaji-lembur').textContent = formatRp(gajiLembur);
+  document.getElementById('slip-jumlah').textContent  = formatRp(jumlah);
+  document.getElementById('slip-kasbon').textContent  = formatRp(kasbon);
+  document.getElementById('slip-diterima').textContent = formatRp(diterima);
+}
+
+// Auto update slip on any input change
+['ab-tanggal','ab-project','ab-gaji','ab-jam-dtg','ab-jam-plg',
+ 'ab-lembur','ab-tarif-lembur','ab-kasbon','ab-hari-kerja'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('input', updateSlipPreview);
+});
+
+// ─── HITUNG LEMBUR ──────────────────────
+function hitungLembur() {
+  const dtg = document.getElementById('ab-jam-dtg').value;
+  const plg = document.getElementById('ab-jam-plg').value;
+  if (!dtg || !plg) return;
+  const [dh,dm] = dtg.split(':').map(Number);
+  const [ph,pm] = plg.split(':').map(Number);
+  const totalMenit = (ph*60+pm) - (dh*60+dm);
+  const jamKerja = totalMenit / 60;
+  // Lembur = jam kerja lebih dari 8 jam
+  const lembur = Math.max(0, Math.round((jamKerja - 8) * 2) / 2);
+  document.getElementById('ab-lembur').value = lembur > 0 ? lembur : 0;
+  updateSlipPreview();
+}
+
+// ─── PEKERJA ────────────────────────────
+function onPekerjaChange() {
+  const nama = document.getElementById('ab-nama').value;
+  const pk = pekerjaData.find(p => (p.Nama||p.nama) === nama);
+  if (pk) {
+    document.getElementById('ab-skill').value = pk.Skill || pk.skill || '';
+    document.getElementById('ab-gaji').value = pk.GajiHari || pk.gajiHari || pk.gaji || 0;
+    document.getElementById('ab-tarif-lembur').value = pk.LemburJam || pk.lemburJam || pk.lembur || 0;
+  }
+  updateSlipPreview();
+}
+
+async function loadPekerjaData() {
+  if (!SCRIPT_URL) return;
+  const res = await apiCall({action:'getPekerja'});
+  if (res && res.ok) {
+    pekerjaData = res.data || [];
+    renderPekerjaList();
+    // Update dropdown
+    const sel = document.getElementById('ab-nama');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">-- Pilih Pekerja --</option>';
+    pekerjaData.forEach(p => {
+      const nama = p.Nama || p.nama || '';
+      sel.innerHTML += '<option value="' + nama + '">' + nama + '</option>';
+    });
+    sel.value = current;
+  }
+}
+
+function renderPekerjaList() {
+  const el = document.getElementById('list-pekerja');
+  if (!pekerjaData.length) {
+    el.innerHTML = '<div class="empty-state"><div class="empty-icon">👷</div>Belum ada data pekerja.</div>';
+    return;
+  }
+  el.innerHTML = pekerjaData.map((p,i) => {
+    const nama  = p.Nama  || p.nama  || '-';
+    const skill = p.Skill || p.skill || '-';
+    const gaji  = Number(p.GajiHari || p.gajiHari || p.gaji || 0);
+    const lembur= Number(p.LemburJam|| p.lemburJam|| p.lembur|| 0);
+    const inisial = nama.substring(0,2).toUpperCase();
+    return '<div class="worker-card">' +
+      '<div class="worker-avatar">' + inisial + '</div>' +
+      '<div><div class="worker-name">' + nama + '</div>' +
+      '<div class="worker-meta">' + skill + ' &nbsp;·&nbsp; Lembur ' + formatRp(lembur) + '/jam</div></div>' +
+      '<div class="worker-gaji"><div class="gaji-val">' + formatRp(gaji) + '</div><div class="gaji-label">per hari</div></div>' +
+      '</div>';
+  }).join('');
+}
+
+async function simpanPekerja() {
+  const nama  = document.getElementById('pk-nama').value.trim();
+  const skill = document.getElementById('pk-skill').value.trim();
+  const gaji  = document.getElementById('pk-gaji').value;
+  const lembur= document.getElementById('pk-lembur').value;
+  const hp    = document.getElementById('pk-hp').value.trim();
+  const ket   = document.getElementById('pk-ket').value.trim();
+  if (!nama || !skill || !gaji) { showToast('Isi nama, skill, dan gaji', 'error'); return; }
+
+  const btn = document.getElementById('btn-pk-simpan');
+  btn.innerHTML = '<span class="spinner"></span> Menyimpan...';
+  btn.disabled = true;
+
+  const res = await apiCall({action:'addPekerja', nama, skill, gaji, lembur, hp, ket});
+  btn.innerHTML = '💾 Simpan Pekerja'; btn.disabled = false;
+  if (res && res.ok) {
+    showToast('✅ Pekerja berhasil disimpan!', 'success');
+    resetPekerjaForm();
+    await loadPekerjaData();
+  } else {
+    showToast('Gagal menyimpan', 'error');
+  }
+}
+
+function resetPekerjaForm() {
+  ['pk-nama','pk-skill','pk-gaji','pk-lembur','pk-hp','pk-ket'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+}
+
+// ─── ABSEN DATA ─────────────────────────
+async function loadAbsenData() {
+  if (!SCRIPT_URL) return;
+  showToast('🔄 Memuat data absen...');
+  const res = await apiCall({action:'getAbsen'});
+  if (res && res.ok) {
+    absenData = res.data || [];
+    renderAbsenTable();
+  }
+}
+
+function renderAbsenTable() {
+  const tbody = document.getElementById('ab-tbody');
+  const fNama = (document.getElementById('ab-filter-nama').value||'').toLowerCase();
+  const fTgl  = document.getElementById('ab-filter-tgl').value;
+  let filtered = absenData.filter(r => {
+    const nama = (r.Nama||r.nama||'').toLowerCase();
+    const tgl  = (r.Tanggal||r.tanggal||'').toString();
+    return (!fNama || nama.includes(fNama)) && (!fTgl || tgl.includes(fTgl));
+  });
+  document.getElementById('ab-count').textContent = filtered.length + ' data';
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="14"><div class="empty-state"><div class="empty-icon">🕐</div>Belum ada data.</div></td></tr>';
+    return;
+  }
+  tbody.innerHTML = filtered.map((r,i) => {
+    const gaji    = Number(r.GajiHari||r.gajiHari||r.gaji||0);
+    const hari    = Number(r.HariKerja||r.hariKerja||1);
+    const lembur  = Number(r.Lembur||r.lembur||0);
+    const tarifLmb= Number(r.TarifLembur||r.tarifLembur||0);
+    const kasbon  = Number(r.Kasbon||r.kasbon||0);
+    const pokok   = gaji * hari;
+    const lemburRp= lembur * tarifLmb;
+    const diterima= pokok + lemburRp - kasbon;
+    return '<tr>' +
+      '<td style="color:#3A6090;font-size:12px;">' + (i+1) + '</td>' +
+      '<td style="white-space:nowrap;">' + formatDate(r.Tanggal||r.tanggal) + '</td>' +
+      '<td style="font-weight:600;">' + (r.Nama||r.nama||'-') + '</td>' +
+      '<td style="font-size:12px;color:#3A6090;">' + (r.Project||r.project||'-') + '</td>' +
+      '<td style="font-size:12px;color:#3A6090;">' + (r.Skill||r.skill||'-') + '</td>' +
+      '<td style="font-size:12px;">' + (r.JamDtg||r.jamDtg||'-') + '</td>' +
+      '<td style="font-size:12px;">' + (r.JamPlg||r.jamPlg||'-') + '</td>' +
+      '<td style="font-size:12px;text-align:center;">' + lembur + '</td>' +
+      '<td style="font-size:12px;text-align:center;">' + hari + '</td>' +
+      '<td class="td-amount masuk">' + formatRp(pokok) + '</td>' +
+      '<td class="td-amount masuk">' + formatRp(lemburRp) + '</td>' +
+      '<td class="td-amount keluar">' + formatRp(kasbon) + '</td>' +
+      '<td class="td-amount" style="color:#1A73C8;font-weight:700;">' + formatRp(diterima) + '</td>' +
+      '<td style="font-size:12px;color:#3A6090;">' + (r.Keterangan||r.keterangan||'-') + '</td>' +
+      '</tr>';
+  }).join('');
+}
+
+async function simpanAbsen() {
+  const tanggal  = document.getElementById('ab-tanggal').value;
+  const nama     = document.getElementById('ab-nama').value;
+  const project  = document.getElementById('ab-project').value.trim();
+  const skill    = document.getElementById('ab-skill').value;
+  const gaji     = document.getElementById('ab-gaji').value;
+  const jamDtg   = document.getElementById('ab-jam-dtg').value;
+  const jamPlg   = document.getElementById('ab-jam-plg').value;
+  const lembur   = document.getElementById('ab-lembur').value || 0;
+  const tarifLmb = document.getElementById('ab-tarif-lembur').value || 0;
+  const kasbon   = document.getElementById('ab-kasbon').value || 0;
+  const hariKerja= document.getElementById('ab-hari-kerja').value || 1;
+  const ket      = document.getElementById('ab-keterangan').value.trim();
+
+  if (!tanggal || !nama || !project || !gaji) {
+    showToast('Isi tanggal, nama, project, dan gaji', 'error'); return;
+  }
+
+  const btn = document.getElementById('btn-absen-simpan');
+  btn.innerHTML = '<span class="spinner"></span> Menyimpan...';
+  btn.disabled = true;
+
+  const res = await apiCall({
+    action:'addAbsenSlip', tanggal, nama, project, skill,
+    gaji, jamDtg, jamPlg, lembur, tarifLembur: tarifLmb,
+    kasbon, hariKerja, keterangan: ket
+  });
+
+  btn.innerHTML = '💾 Simpan'; btn.disabled = false;
+  if (res && res.ok) {
+    showToast('✅ Absen berhasil disimpan!', 'success');
+    resetAbsenForm();
+  } else {
+    showToast('Gagal menyimpan', 'error');
+  }
+}
+
+function resetAbsenForm() {
+  ['ab-project','ab-skill','ab-gaji','ab-jam-dtg','ab-jam-plg',
+   'ab-lembur','ab-tarif-lembur','ab-kasbon','ab-keterangan'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  document.getElementById('ab-hari-kerja').value = '1';
+  document.getElementById('ab-tanggal').value = new Date().toISOString().split('T')[0];
+  updateSlipPreview();
+}
+
+// Init absen date
+const abTgl = document.getElementById('ab-tanggal');
+if (abTgl) abTgl.value = new Date().toISOString().split('T')[0];
+
 </script>
 </body>
 </html>
