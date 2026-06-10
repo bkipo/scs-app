@@ -466,6 +466,7 @@
   border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 8px;
 }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
 <div class="glow-a"></div>
@@ -658,17 +659,31 @@
     <button class="back-btn" onclick="showPage('home')">&#8592; Kembali</button>
     <div>
       <div class="page-title">📊 Cash Flow</div>
-      <div class="page-subtitle">Rekap semua kas — Alif, Febri, Maya</div>
+      <div class="page-subtitle">Rekap &amp; analisis semua kas</div>
     </div>
   </div>
   <div class="kas-body">
 
-    <!-- SUMMARY ALL -->
+    <!-- SUMMARY CARDS -->
     <div class="cf-summary">
       <div class="cf-sum-card"><div class="cf-sum-label">Total Pemasukan</div><div class="cf-sum-val green" id="cf-masuk">Rp 0</div></div>
       <div class="cf-sum-card"><div class="cf-sum-label">Total Pengeluaran</div><div class="cf-sum-val red" id="cf-keluar">Rp 0</div></div>
       <div class="cf-sum-card"><div class="cf-sum-label">Saldo Total</div><div class="cf-sum-val blue" id="cf-saldo">Rp 0</div></div>
       <div class="cf-sum-card"><div class="cf-sum-label">Total Transaksi</div><div class="cf-sum-val blue" id="cf-total-trx">0</div></div>
+    </div>
+
+    <!-- CHARTS ROW -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:24px;">
+      <!-- Bar Chart -->
+      <div class="table-card" style="padding:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#0D2444;margin-bottom:16px;">📊 Pemasukan vs Pengeluaran per Kas</div>
+        <canvas id="barChart" height="200"></canvas>
+      </div>
+      <!-- Pie Chart -->
+      <div class="table-card" style="padding:20px;">
+        <div style="font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:#0D2444;margin-bottom:16px;">🥧 Komposisi Transaksi</div>
+        <canvas id="pieChart" height="200"></canvas>
+      </div>
     </div>
 
     <!-- KAS TABS -->
@@ -699,10 +714,7 @@
       <div class="table-wrap">
         <table>
           <thead>
-            <tr>
-              <th>No</th><th>Kas</th><th>Tanggal</th><th>Uraian</th>
-              <th>Kategori</th><th>Jenis</th><th>Jumlah</th><th>Oleh</th>
-            </tr>
+            <tr><th>No</th><th>Kas</th><th>Tanggal</th><th>Uraian</th><th>Kategori</th><th>Jenis</th><th>Jumlah</th><th>Oleh</th></tr>
           </thead>
           <tbody id="cf-tbody">
             <tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📊</div>Klik Refresh untuk memuat data.</div></td></tr>
@@ -1171,10 +1183,62 @@ function updateCFSummary() {
   document.getElementById('cf-total-trx').textContent = data.length;
 }
 
+// Chart instances
+let barChartInst = null, pieChartInst = null;
+
+function renderCharts(data) {
+  // Bar chart - per kas
+  const names = ['Alif','Febri','Maya'];
+  const masukData = names.map(n => data.filter(r=>r._kas===n&&(r.Jenis||'')==='Pemasukan').reduce((a,r)=>a+Number(r.Jumlah||0),0));
+  const keluarData = names.map(n => data.filter(r=>r._kas===n&&(r.Jenis||'')==='Pengeluaran').reduce((a,r)=>a+Number(r.Jumlah||0),0));
+
+  const barCtx = document.getElementById('barChart').getContext('2d');
+  if (barChartInst) barChartInst.destroy();
+  barChartInst = new Chart(barCtx, {
+    type: 'bar',
+    data: {
+      labels: ['Kas Alif','Kas Febri','Kas Maya'],
+      datasets: [
+        { label: 'Pemasukan', data: masukData, backgroundColor: 'rgba(30,126,52,0.7)', borderRadius: 6 },
+        { label: 'Pengeluaran', data: keluarData, backgroundColor: 'rgba(198,40,40,0.7)', borderRadius: 6 }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: { legend: { position: 'bottom' } },
+      scales: { y: { ticks: { callback: v => 'Rp '+Number(v).toLocaleString('id-ID') } } }
+    }
+  });
+
+  // Pie chart - komposisi jenis
+  const totalMasuk  = data.filter(r=>(r.Jenis||'')==='Pemasukan').reduce((a,r)=>a+Number(r.Jumlah||0),0);
+  const totalKeluar = data.filter(r=>(r.Jenis||'')==='Pengeluaran').reduce((a,r)=>a+Number(r.Jumlah||0),0);
+  const pieCtx = document.getElementById('pieChart').getContext('2d');
+  if (pieChartInst) pieChartInst.destroy();
+  pieChartInst = new Chart(pieCtx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Pemasukan','Pengeluaran'],
+      datasets: [{ data: [totalMasuk, totalKeluar], backgroundColor: ['rgba(30,126,52,0.75)','rgba(198,40,40,0.75)'], borderWidth: 2 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: true,
+      plugins: {
+        legend: { position: 'bottom' },
+        tooltip: { callbacks: { label: ctx => ' Rp '+Number(ctx.raw).toLocaleString('id-ID') } }
+      }
+    }
+  });
+}
+
 function renderCashFlow() {
   const data  = getCFFiltered();
   const tbody = document.getElementById('cf-tbody');
   document.getElementById('cf-count').textContent = data.length + ' data';
+
+  // Render charts
+  renderCharts(cfAllData); // always show all in chart
+
   if (!data.length) {
     tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><div class="empty-icon">📊</div>Tidak ada data.</div></td></tr>';
     return;
