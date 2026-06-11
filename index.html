@@ -599,6 +599,32 @@
 </div>
 
 <!-- ════════ LAPOR KAS ════════ -->
+<div id="page-pilih-kas" class="page">
+  <div class="page-header">
+    <button class="back-btn" onclick="showPage('home')">&#8592; Kembali</button>
+    <div><div class="page-title">💰 Pilih Kas</div><div class="page-subtitle">Pilih kas yang ingin dicatat</div></div>
+  </div>
+  <div class="kas-body">
+    <div class="kas-picker-grid">
+      <div class="kas-picker-card" onclick="bukaKas('Alif')">
+        <div class="kas-avatar kas-av-alif">AL</div>
+        <div class="kas-name">Kas Alif</div>
+        <div class="kas-desc">Kelola kas Alif</div>
+      </div>
+      <div class="kas-picker-card" onclick="bukaKas('Febri')">
+        <div class="kas-avatar kas-av-febri">FB</div>
+        <div class="kas-name">Kas Febri</div>
+        <div class="kas-desc">Kelola kas Febri</div>
+      </div>
+      <div class="kas-picker-card" onclick="bukaKas('Maya')">
+        <div class="kas-avatar kas-av-maya">MY</div>
+        <div class="kas-name">Kas Maya</div>
+        <div class="kas-desc">Kelola kas Maya</div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="page-lapor-kas" class="page">
   <div class="page-header">
     <button class="back-btn" onclick="showPage('pilih-kas')">&#8592; Kembali</button>
@@ -806,6 +832,16 @@
 </div>
 
 <!-- ════════ CASH FLOW PAGE ════════ -->
+<div id="page-progress" class="page">
+  <div class="page-header">
+    <button class="back-btn" onclick="showPage('home')">&#8592; Kembali</button>
+    <div><div class="page-title">📸 Progress &amp; Foto</div><div class="page-subtitle">Segera hadir</div></div>
+  </div>
+  <div class="kas-body">
+    <div class="empty-state"><div class="empty-icon">📸</div>Fitur Progress &amp; Foto segera hadir.</div>
+  </div>
+</div>
+
 <div id="page-cashflow" class="page">
   <div class="page-header">
     <button class="back-btn" onclick="showPage('home')">&#8592; Kembali</button>
@@ -1031,7 +1067,9 @@ function bukaKas(nama) {
 // ─── NAVIGATION ─────────────────────────
 function showPage(name) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + name).classList.add('active');
+  const target = document.getElementById('page-' + name);
+  if (!target) { showToast('Halaman "' + name + '" belum tersedia', 'error'); document.getElementById('page-home').classList.add('active'); return; }
+  target.classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
   if (name === 'lapor-kas') { initSetupBanner(); loadKasData(); }
   if (name === 'absen') {
