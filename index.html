@@ -990,8 +990,8 @@
 //  CONFIG
 // ═══════════════════════════════════════
 let SCRIPT_URL = (function(){
-  try { return localStorage.getItem('scs-script-url') || 'https://script.google.com/macros/s/AKfycbxWin4yGwNEAAyVPPadvNcy7H3rRDytuTxdp_9RyshiM2aukVJB3nFqM1riCuhWkUlJDA/exec'; }
-  catch(e) { return 'https://script.google.com/macros/s/AKfycbxWin4yGwNEAAyVPPadvNcy7H3rRDytuTxdp_9RyshiM2aukVJB3nFqM1riCuhWkUlJDA/exec'; }
+  try { return localStorage.getItem('scs-script-url') || 'https://script.google.com/macros/s/AKfycbwoPZPEMHnXTdyXPKPc2O4t79hTxjCFLfulg1u6F1XoBIlQDHkpyU4fVqVk-zjwNbM-Qw/exec'; }
+  catch(e) { return 'https://script.google.com/macros/s/AKfycbwoPZPEMHnXTdyXPKPc2O4t79hTxjCFLfulg1u6F1XoBIlQDHkpyU4fVqVk-zjwNbM-Qw/exec'; }
 })();
 let kasData    = [];
 
@@ -1701,7 +1701,7 @@ async function loadPekerjaData() {
   if (res && res.ok) {
     pekerjaData = res.data || [];
     renderPekerjaList();
-    // Update slip gaji dropdown if exists
+    // Update slip gaji dropdown
     const sel = document.getElementById('slip-filter-nama');
     if (sel) {
       sel.innerHTML = '<option value="">Semua Pekerja</option>';
@@ -1710,7 +1710,10 @@ async function loadPekerjaData() {
         sel.innerHTML += '<option value="' + nama + '">' + nama + '</option>';
       });
     }
-
+    // Render input absen jika ada
+    if (document.getElementById('ab-input-tbody')) {
+      renderAbsenInput();
+    }
   }
 }
 
@@ -1721,18 +1724,54 @@ function renderPekerjaList() {
     return;
   }
   el.innerHTML = pekerjaData.map((p,i) => {
-    const nama  = p.Nama  || p.nama  || '-';
-    const skill = p.Skill || p.skill || '-';
-    const gaji  = Number(p.GajiHari || p.gajiHari || p.gaji || 0);
-    const lembur= Number(p.LemburJam|| p.lemburJam|| p.lembur|| 0);
+    const nama   = p.Nama   || p.nama   || '-';
+    const skill  = p.Skill  || p.skill  || '-';
+    const gaji   = Number(p.GajiHari  || p.gajiHari  || p.gaji   || 0);
+    const lembur = Number(p.LemburJam || p.lemburJam || p.lembur || 0);
+    const hp     = p.HP || p.hp || '-';
+    const ket    = p.Keterangan || p.keterangan || '';
     const inisial = nama.substring(0,2).toUpperCase();
-    return '<div class="worker-card">' +
+    return '<div class="worker-card" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:1px solid rgba(26,115,200,0.08);">' +
       '<div class="worker-avatar">' + inisial + '</div>' +
-      '<div><div class="worker-name">' + nama + '</div>' +
-      '<div class="worker-meta">' + skill + ' &nbsp;·&nbsp; Lembur ' + formatRp(lembur) + '/jam</div></div>' +
-      '<div class="worker-gaji"><div class="gaji-val">' + formatRp(gaji) + '</div><div class="gaji-label">per hari</div></div>' +
-      '</div>';
+      '<div style="flex:1;">' +
+        '<div class="worker-name">' + nama + '</div>' +
+        '<div class="worker-meta">' + skill + ' &nbsp;·&nbsp; Lembur ' + formatRp(lembur) + '/jam</div>' +
+        (hp !== '-' ? '<div style="font-size:11px;color:#3A6090;margin-top:2px;">📱 ' + hp + '</div>' : '') +
+      '</div>' +
+      '<div class="worker-gaji" style="text-align:right;margin-right:12px;">' +
+        '<div class="gaji-val">' + formatRp(gaji) + '</div>' +
+        '<div class="gaji-label">per hari</div>' +
+      '</div>' +
+      '<div style="display:flex;gap:6px;">' +
+        '<button onclick="editPekerja(' + i + ')" style="background:rgba(26,115,200,0.1);border:none;color:#1A73C8;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">✏️ Edit</button>' +
+        '<button onclick="hapusPekerja(\"' + nama.replace(/"/g,'&quot;') + '\")" style="background:rgba(198,40,40,0.1);border:none;color:#C62828;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">🗑 Hapus</button>' +
+      '</div>' +
+    '</div>';
   }).join('');
+}
+
+function editPekerja(idx) {
+  const p = pekerjaData[idx];
+  if (!p) return;
+  document.getElementById('pk-nama').value  = p.Nama   || p.nama   || '';
+  document.getElementById('pk-skill').value = p.Skill  || p.skill  || '';
+  document.getElementById('pk-gaji').value  = p.GajiHari  || p.gajiHari  || p.gaji   || '';
+  document.getElementById('pk-lembur').value= p.LemburJam || p.lemburJam || p.lembur || '';
+  document.getElementById('pk-hp').value    = p.HP || p.hp || '';
+  document.getElementById('pk-ket').value   = p.Keterangan || p.keterangan || '';
+  document.getElementById('pk-nama').focus();
+  showToast('Data dimuat. Edit lalu klik Simpan.', '');
+}
+
+async function hapusPekerja(nama) {
+  if (!confirm('Hapus pekerja "' + nama + '"? Data absen tidak ikut terhapus.')) return;
+  const res = await apiCall({action:'deletePekerja', nama});
+  if (res && res.ok) {
+    showToast('✅ Pekerja dihapus', 'success');
+    await loadPekerjaData();
+  } else {
+    showToast('Gagal menghapus', 'error');
+  }
 }
 
 async function simpanPekerja() {
