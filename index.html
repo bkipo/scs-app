@@ -1573,60 +1573,20 @@ function switchAbsenTab(name, el) {
   if (name === 'pekerja') loadPekerjaData();
 }
 
-// ─── SLIP PREVIEW ───────────────────────
-function updateSlipPreview() {
-  const nama     = document.getElementById('ab-nama').value;
-  const project  = document.getElementById('ab-project').value || '-';
-  const skill    = document.getElementById('ab-skill').value || '-';
-  const tanggal  = document.getElementById('ab-tanggal').value;
-  const jamDtg   = document.getElementById('ab-jam-dtg').value || '-';
-  const jamPlg   = document.getElementById('ab-jam-plg').value || '-';
-  const hari     = Number(document.getElementById('ab-hari-kerja').value) || 0;
-  const gaji     = Number(document.getElementById('ab-gaji').value) || 0;
-  const lembur   = Number(document.getElementById('ab-lembur').value) || 0;
-  const tarifLmb = Number(document.getElementById('ab-tarif-lembur').value) || 0;
-  const kasbon   = Number(document.getElementById('ab-kasbon').value) || 0;
-
-  const gajiPokok  = gaji * hari;
-  const gajiLembur = lembur * tarifLmb;
-  const jumlah     = gajiPokok + gajiLembur;
-  const diterima   = jumlah - kasbon;
-
-  document.getElementById('slip-nama').textContent    = nama || '-';
-  document.getElementById('slip-project').textContent = project;
-  document.getElementById('slip-skill').textContent   = skill;
-  document.getElementById('slip-tanggal').textContent = tanggal ? formatDate(tanggal) : '-';
-  document.getElementById('slip-jam-dtg').textContent = jamDtg;
-  document.getElementById('slip-jam-plg').textContent = jamPlg;
-  document.getElementById('slip-hari').textContent    = hari + ' hari';
-  document.getElementById('slip-lembur').textContent  = lembur + ' jam';
-  document.getElementById('slip-gaji-pokok').textContent = formatRp(gajiPokok);
-  document.getElementById('slip-gaji-lembur').textContent = formatRp(gajiLembur);
-  document.getElementById('slip-jumlah').textContent  = formatRp(jumlah);
-  document.getElementById('slip-kasbon').textContent  = formatRp(kasbon);
-  document.getElementById('slip-diterima').textContent = formatRp(diterima);
-}
-
-// Auto update slip on any input change
-['ab-tanggal','ab-project','ab-gaji','ab-jam-dtg','ab-jam-plg',
- 'ab-lembur','ab-tarif-lembur','ab-kasbon','ab-hari-kerja'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) el.addEventListener('input', updateSlipPreview);
-});
+// Slip preview moved to Slip Gaji page
 
 // ─── HITUNG LEMBUR ──────────────────────
-function hitungLembur() {
-  const dtg = document.getElementById('ab-jam-dtg').value;
-  const plg = document.getElementById('ab-jam-plg').value;
+function hitungLembur(idx) {
+  const dtg = document.getElementById('ab-dtg-' + idx)?.value;
+  const plg = document.getElementById('ab-plg-' + idx)?.value;
   if (!dtg || !plg) return;
   const [dh,dm] = dtg.split(':').map(Number);
   const [ph,pm] = plg.split(':').map(Number);
   const totalMenit = (ph*60+pm) - (dh*60+dm);
   const jamKerja = totalMenit / 60;
-  // Lembur = jam kerja lebih dari 8 jam
   const lembur = Math.max(0, Math.round((jamKerja - 8) * 2) / 2);
-  document.getElementById('ab-lembur').value = lembur > 0 ? lembur : 0;
-  updateSlipPreview();
+  const el = document.getElementById('ab-lemb-' + idx);
+  if (el) el.value = lembur;
 }
 
 // ─── PEKERJA ────────────────────────────
