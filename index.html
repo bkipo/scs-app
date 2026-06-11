@@ -2033,6 +2033,33 @@ function switchAbsenTab(name, el) {
 // Slip preview moved to Slip Gaji page
 
 // ─── HITUNG LEMBUR ──────────────────────
+function onStatusChange(idx, el) {
+  const tidakMasuk = el.value === 'Tidak Masuk';
+  // Reset hari & lembur ke 0 jika tidak masuk
+  const elHari = document.getElementById('ab-hari-' + idx);
+  const elLemburDisp = document.getElementById('ab-lemb-disp-' + idx);
+  const elLembur = document.getElementById('ab-lemb-' + idx);
+  const elHariKerja = document.getElementById('ab-harikerja-' + idx);
+  const elDtgH = document.getElementById('ab-dtg-h-' + idx);
+  const elPlgH = document.getElementById('ab-plg-h-' + idx);
+  const elDtgM = document.getElementById('ab-dtg-m-' + idx);
+  const elPlgM = document.getElementById('ab-plg-m-' + idx);
+  const elDtg = document.getElementById('ab-dtg-' + idx);
+  const elPlg = document.getElementById('ab-plg-' + idx);
+
+  if (tidakMasuk) {
+    if (elHari) { elHari.textContent = '0 hari'; elHari.style.color = '#C62828'; }
+    if (elLemburDisp) { elLemburDisp.textContent = '0 jam'; elLemburDisp.style.color = '#3A6090'; }
+    if (elLembur) elLembur.value = 0;
+    if (elHariKerja) elHariKerja.value = 0;
+    // Disable jam inputs
+    [elDtgH, elPlgH, elDtgM, elPlgM].forEach(e => { if(e) { e.disabled = true; e.style.opacity='0.4'; } });
+  } else {
+    [elDtgH, elPlgH, elDtgM, elPlgM].forEach(e => { if(e) { e.disabled = false; e.style.opacity='1'; } });
+    hitungHariDanLembur(idx);
+  }
+}
+
 function pad2(n) { return String(Math.max(0,n)).padStart(2,'0'); }
 
 function syncJam(tipe, idx) {
@@ -2381,11 +2408,9 @@ function renderAbsenInput() {
       <td style="padding:8px;text-align:center;"><span id="ab-lemb-disp-${i}" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#1A73C8;">0 jam</span><input type="hidden" id="ab-lemb-${i}" value="0"></td>
       <td style="padding:8px;"><input type="number" id="ab-kasbon-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="0" min="0"></td>
       <td style="padding:8px;">
-        <select id="ab-status-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;">
-          <option value="Hadir">Hadir</option>
-          <option value="Tidak Masuk">Tidak Masuk</option>
-          <option value="Izin">Izin</option>
-          <option value="Sakit">Sakit</option>
+        <select id="ab-status-${i}" onchange="onStatusChange(${i},this)" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;">
+          <option value="Hadir">✅ Masuk</option>
+          <option value="Tidak Masuk">❌ Tidak Masuk</option>
         </select>
       </td>
       <td style="padding:8px;"><input type="text" id="ab-ket-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" placeholder="Opsional"></td>
@@ -2467,6 +2492,8 @@ async function simpanAbsenBulk() {
     const r = rows[i];
     // Delay 300ms antar request agar JSONP tidak bentrok
     if (i > 0) await new Promise(res => setTimeout(res, 300));
+    // Skip simpan jika Tidak Masuk
+    if (r.status === 'Tidak Masuk') { sukses++; continue; }
     const res = await apiCall({
       action:'upsertAbsenSlip', tanggal, project,
       nama: r.nama, skill: r.skill, gaji: r.gaji,
