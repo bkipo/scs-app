@@ -1261,7 +1261,7 @@ async function tambahKas() {
     }
   } else {
     // fallback localStorage
-    const local = JSON.parse(localStorage.getItem('scs-kas-local')||'[]');
+    const local = JSON.parse((function(){try{return localStorage.getItem('scs-kas-local');}catch(e){return null;}})() || '[]');
     local.unshift({ID:Date.now().toString(),Tanggal:tanggal,Uraian:uraian,Kategori:kategori,Jenis:jenis,Jumlah:jumlah,Nota:nota,OlehUser:oleh});
     try { localStorage.setItem('scs-kas-local', JSON.stringify(local)); } catch(e) {}
     kasData = local;
@@ -1283,9 +1283,9 @@ async function hapusKas(id) {
     if (res && res.ok) { showToast('🗑️ Data dihapus', ''); await loadKasData(); }
     else showToast('Gagal menghapus', 'error');
   } else {
-    const local = JSON.parse(localStorage.getItem('scs-kas-local')||'[]');
+    const local = JSON.parse((function(){try{return localStorage.getItem('scs-kas-local');}catch(e){return null;}})() || '[]');
     const updated = local.filter(r => r.ID !== id.toString());
-    localStorage.setItem('scs-kas-local', JSON.stringify(updated));
+    try { localStorage.setItem('scs-kas-local', JSON.stringify(updated)); } catch(e) {}
     kasData = updated;
     updateSummary(); renderTable();
     showToast('🗑️ Data dihapus', '');
@@ -1937,8 +1937,36 @@ function resetAbsenForm() {
 }
 
 // Init absen date
-const abTgl = document.getElementById('ab-tanggal');
-if (abTgl) abTgl.value = new Date().toISOString().split('T')[0];
+try {
+  const abTgl = document.getElementById('ab-tanggal');
+  if (abTgl) abTgl.value = new Date().toISOString().split('T')[0];
+} catch(e) { console.error('Init error:', e); }
+
+// ─── Expose ke window agar onclick di HTML bisa akses ───
+window.showPage        = showPage;
+window.bukacashflow    = bukacashflow;
+window.bukaKas         = bukaKas;
+window.tambahKas       = tambahKas;
+window.hapusKas        = hapusKas;
+window.resetKasForm    = resetKasForm;
+window.renderTable     = renderTable;
+window.loadKasData     = loadKasData;
+window.saveScriptUrl   = saveScriptUrl;
+window.switchAbsenTab  = switchAbsenTab;
+window.loadAbsenData   = loadAbsenData;
+window.renderAbsenTable= renderAbsenTable;
+window.simpanAbsenBulk = simpanAbsenBulk;
+window.renderAbsenInput= renderAbsenInput;
+window.simpanPekerja   = simpanPekerja;
+window.resetPekerjaForm= resetPekerjaForm;
+window.confirmAbsen    = confirmAbsen;
+window.loadSlipGaji    = loadSlipGaji;
+window.cfFilter        = cfFilter;
+window.renderCashFlow  = renderCashFlow;
+window.loadCashFlow    = loadCashFlow;
+window.hitungLembur    = hitungLembur;
+window.hapusFoto       = hapusFoto;
+window.previewFoto     = previewFoto;
 
 </script>
 </body>
