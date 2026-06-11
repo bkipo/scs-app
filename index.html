@@ -750,8 +750,8 @@
       <div class="form-card" style="margin-bottom:16px;">
         <div style="display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;">
           <div class="form-group" style="flex:1;min-width:160px;">
-            <label>Tanggal *</label>
-            <input type="date" id="ab-tanggal" onchange="renderAbsenInput()">
+            <label>Tanggal * <span id="ab-tgl-badge" style="display:none;font-size:11px;padding:2px 8px;border-radius:10px;background:#D4EDDA;color:#1E7E34;font-weight:600;margin-left:4px;">✓ Sudah diisi</span></label>
+            <input type="date" id="ab-tanggal" onchange="onTanggalChange()">
           </div>
           <div class="form-group" style="flex:1;min-width:160px;">
             <label>Project *</label>
@@ -1791,17 +1791,23 @@ async function loadSlipMinggu() {
 
     const dayNames = ['Sen','Sel','Rab','Kam','Jum','Sab','Min'];
     const gridHTML = hariGrid.map((h, idx) => {
-      const status = h.entry ? (h.entry.Status||h.entry.status||'Hadir') : '-';
+      const status = h.entry ? (h.entry.Status||h.entry.status||'Hadir') : null;
       const lmb    = h.entry ? Number(h.entry.Lembur||h.entry.lembur||0) : 0;
       const ksb    = h.entry ? Number(h.entry.Kasbon||h.entry.kasbon||0) : 0;
-      const bg     = !h.entry ? '#f5f5f5' : status==='Hadir' ? '#D4EDDA' : status==='Sakit' ? '#FFF3CD' : status==='Izin' ? '#D1ECF1' : '#F8D7DA';
-      const txtColor = !h.entry ? '#999' : '#0D2444';
-      return '<td style="padding:8px 10px;text-align:center;background:' + bg + ';color:' + txtColor + ';font-size:12px;border-right:1px solid rgba(26,115,200,0.08);">' +
+      const dtg    = h.entry ? (h.entry.JamDtg||h.entry.jamDtg||'') : '';
+      const plg    = h.entry ? (h.entry.JamPlg||h.entry.jamPlg||'') : '';
+      const isMasuk = status === 'Hadir';
+      const bg = !h.entry ? '#f8f8f8' : isMasuk ? '#D4EDDA' : '#FFEBEE';
+      const txtColor = !h.entry ? '#bbb' : '#0D2444';
+      const statusLabel = !h.entry ? 'Libur' : isMasuk ? 'Masuk' : 'Tdk Masuk';
+      const statusColor = !h.entry ? '#bbb' : isMasuk ? '#1E7E34' : '#C62828';
+      return '<td style="padding:8px 6px;text-align:center;background:' + bg + ';color:' + txtColor + ';font-size:12px;border-right:1px solid rgba(26,115,200,0.08);min-width:70px;">' +
         '<div style="font-weight:700;font-size:11px;color:#3A6090;">' + dayNames[idx] + '</div>' +
-        '<div style="font-size:11px;">' + h.dt.getDate() + '</div>' +
-        '<div style="margin-top:3px;font-size:10px;font-weight:600;">' + (h.entry ? status : 'Libur') + '</div>' +
-        (lmb ? '<div style="font-size:10px;color:#1A73C8;">+' + lmb + 'j</div>' : '') +
-        (ksb ? '<div style="font-size:10px;color:#C62828;">-' + formatRp(ksb) + '</div>' : '') +
+        '<div style="font-size:13px;font-weight:700;">' + h.dt.getDate() + '</div>' +
+        '<div style="margin-top:3px;font-size:10px;font-weight:700;color:' + statusColor + ';">' + statusLabel + '</div>' +
+        (h.entry && dtg ? '<div style="font-size:10px;color:#555;">' + String(dtg).substring(0,5) + '–' + String(plg).substring(0,5) + '</div>' : '') +
+        (lmb ? '<div style="font-size:10px;font-weight:600;color:#C87000;margin-top:2px;">⏱ +' + lmb + 'j</div>' : '') +
+        (ksb ? '<div style="font-size:10px;color:#C62828;">💸 -' + formatRp(ksb) + '</div>' : '') +
       '</td>';
     }).join('');
 
@@ -1821,9 +1827,11 @@ async function loadSlipMinggu() {
       '</div>' +
       // Ringkasan
       '<div class="slip-total" style="margin:0;border-radius:0;border-top:1px solid rgba(26,115,200,0.1);">' +
-        '<div class="slip-total-row"><span>Gaji Pokok</span><span>' + totalHari + ' hari × ' + formatRp(gaji) + ' = ' + formatRp(pokok) + '</span></div>' +
-        '<div class="slip-total-row"><span>Lembur</span><span>' + totalLembur + ' jam × ' + formatRp(tarif) + ' = ' + formatRp(lemburRp) + '</span></div>' +
-        '<div class="slip-total-row"><span>Kasbon</span><span class="slip-kasbon">- ' + formatRp(totalKasbon) + '</span></div>' +
+        '<div class="slip-total-row"><span>📅 Hari Masuk</span><span style="font-weight:700;color:#1A73C8;">' + totalHari + ' hari</span></div>' +
+        '<div class="slip-total-row"><span>⏱ Total Jam Lembur</span><span style="font-weight:700;color:#C87000;">' + totalLembur + ' jam</span></div>' +
+        '<div class="slip-total-row" style="border-top:1px solid rgba(26,115,200,0.08);margin-top:6px;padding-top:6px;"><span>Gaji Pokok</span><span>' + totalHari + ' hari × ' + formatRp(gaji) + ' = <strong>' + formatRp(pokok) + '</strong></span></div>' +
+        (totalLembur > 0 ? '<div class="slip-total-row"><span>Lembur</span><span>' + totalLembur + ' jam × ' + formatRp(tarif) + ' = <strong>' + formatRp(lemburRp) + '</strong></span></div>' : '') +
+        (totalKasbon > 0 ? '<div class="slip-total-row"><span>Kasbon</span><span class="slip-kasbon">- ' + formatRp(totalKasbon) + '</span></div>' : '') +
         '<div class="slip-total-row" style="border-top:1px solid rgba(26,115,200,0.15);padding-top:8px;margin-top:4px;">' +
           '<span style="font-weight:700;">💰 Total Diterima</span>' +
           '<span style="color:#1E7E34;font-size:16px;font-weight:700;">' + formatRp(diterima) + '</span>' +
@@ -2033,6 +2041,34 @@ function switchAbsenTab(name, el) {
 // Slip preview moved to Slip Gaji page
 
 // ─── HITUNG LEMBUR ──────────────────────
+function onTanggalChange() {
+  renderAbsenInput();
+  cekTanggalSudahDiisi();
+}
+
+async function cekTanggalSudahDiisi() {
+  const tgl = document.getElementById('ab-tanggal').value;
+  const badge = document.getElementById('ab-tgl-badge');
+  if (!tgl || !badge) return;
+  // Cek dari absenData yang sudah di-load, atau fetch ulang
+  let dataToCheck = absenData;
+  if (!dataToCheck.length) {
+    const res = await apiCall({action:'getAbsen'});
+    if (res && res.ok) dataToCheck = res.data || [];
+  }
+  const sudahAda = dataToCheck.some(r => {
+    const rawTgl = r.Tanggal || r.tanggal || '';
+    let tglRow = '';
+    if (typeof rawTgl === 'number' && rawTgl > 1000) {
+      const ep = new Date(Date.UTC(1899,11,30));
+      const dt = new Date(ep.getTime() + Math.floor(rawTgl)*86400000);
+      tglRow = dt.getUTCFullYear()+'-'+String(dt.getUTCMonth()+1).padStart(2,'0')+'-'+String(dt.getUTCDate()).padStart(2,'0');
+    } else { tglRow = rawTgl.toString().substring(0,10); }
+    return tglRow === tgl;
+  });
+  badge.style.display = sudahAda ? 'inline' : 'none';
+}
+
 function onStatusChange(idx, el) {
   const tidakMasuk = el.value === 'Tidak Masuk';
   // Reset hari & lembur ke 0 jika tidak masuk
