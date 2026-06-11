@@ -1032,9 +1032,7 @@ function showPage(name) {
   window.scrollTo({top:0, behavior:'smooth'});
   if (name === 'lapor-kas') { initSetupBanner(); loadKasData(); }
   if (name === 'absen') {
-    loadPekerjaData().then(function() {
-      renderAbsenInput();
-    });
+    loadPekerjaData();
   }
   if (name === 'slip-gaji') { loadPekerjaData().then(() => initSlipGaji()); }
   if (name === 'home') { setTimeout(loadHomeStats, 500); }
@@ -1671,14 +1669,12 @@ async function loadPekerjaData() {
         sel.innerHTML += '<option value="' + nama + '">' + nama + '</option>';
       });
     }
-    // Auto render absen input after data loaded
+    // Render absen input table jika halaman absen aktif
     if (document.getElementById('ab-input-tbody')) {
       renderAbsenInput();
     }
   }
-}
-
-function renderPekerjaList() {
+} {
   const el = document.getElementById('list-pekerja');
   if (!pekerjaData.length) {
     el.innerHTML = '<div class="empty-state"><div class="empty-icon">👷</div>Belum ada data pekerja.</div>';
@@ -1900,7 +1896,7 @@ async function simpanAbsenBulk() {
     // Delay 300ms antar request agar JSONP tidak bentrok
     if (i > 0) await new Promise(res => setTimeout(res, 300));
     const res = await apiCall({
-      action:'addAbsenSlip', tanggal, project,
+      action:'upsertAbsenSlip', tanggal, project,
       nama: r.nama, skill: r.skill, gaji: r.gaji,
       jamDtg: r.jamDtg, jamPlg: r.jamPlg,
       lembur: r.lembur, tarifLembur: r.tarifLembur,
@@ -1913,7 +1909,14 @@ async function simpanAbsenBulk() {
   }
 
   btn.innerHTML = '💾 Simpan Semua'; btn.disabled = false;
-  if (sukses > 0) showToast('✅ ' + sukses + ' data absen tersimpan!', 'success');
+  if (sukses > 0) {
+    showToast('✅ ' + sukses + ' data absen tersimpan!', 'success');
+    // Auto refresh rekap
+    await loadAbsenData();
+    // Pindah ke tab rekap agar user lihat data terupdate
+    const tabRekap = document.querySelector('.tab-item[onclick*="rekap"]');
+    if (tabRekap) tabRekap.click();
+  }
   if (gagal > 0) showToast(gagal + ' data gagal', 'error');
 }
 
