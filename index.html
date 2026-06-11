@@ -2,9 +2,6 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SCS — Shine Creative Solution</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -953,16 +950,12 @@
 
 </div><!-- /wrap -->
 <script>
-window.onerror = function(msg, src, line, col, err) {
-  document.title = 'ERR L'+line+': '+msg;
-  console.error('GLOBAL ERROR at line '+line+': '+msg);
-};
 // ═══════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════
-let SCRIPT_URL = (function() {
-  try { return localStorage.getItem('scs-script-url') || 'https://script.google.com/macros/s/AKfycbz5_0O12Y8Ty2z2cswTGOB7lM7JRePRbgn2gBa8deUIDzDisgPVRmEEq-8R-6-umigy2Q/exec'; }
-  catch(e) { return 'https://script.google.com/macros/s/AKfycbz5_0O12Y8Ty2z2cswTGOB7lM7JRePRbgn2gBa8deUIDzDisgPVRmEEq-8R-6-umigy2Q/exec'; }
+let SCRIPT_URL = (function(){
+  try { return localStorage.getItem('scs-script-url') || 'https://script.google.com/macros/s/AKfycbxWin4yGwNEAAyVPPadvNcy7H3rRDytuTxdp_9RyshiM2aukVJB3nFqM1riCuhWkUlJDA/exec'; }
+  catch(e) { return 'https://script.google.com/macros/s/AKfycbxWin4yGwNEAAyVPPadvNcy7H3rRDytuTxdp_9RyshiM2aukVJB3nFqM1riCuhWkUlJDA/exec'; }
 })();
 let kasData    = [];
 
@@ -1154,7 +1147,7 @@ function updateSummary() {
 async function loadKasData() {
   if (!SCRIPT_URL) {
     const key = 'scs-kas-local-' + activeKas;
-    kasData = JSON.parse((function(){try{return localStorage.getItem(key);}catch(e){return null;}})() || '[]');
+    kasData = JSON.parse(localStorage.getItem(key) || '[]');
     updateSummary(); renderTable(); return;
   }
   showToast('🔄 Memuat data ' + activeKas + '...');
@@ -1261,9 +1254,9 @@ async function tambahKas() {
     }
   } else {
     // fallback localStorage
-    const local = JSON.parse((function(){try{return localStorage.getItem('scs-kas-local');}catch(e){return null;}})() || '[]');
+    const local = JSON.parse(localStorage.getItem('scs-kas-local')||'[]');
     local.unshift({ID:Date.now().toString(),Tanggal:tanggal,Uraian:uraian,Kategori:kategori,Jenis:jenis,Jumlah:jumlah,Nota:nota,OlehUser:oleh});
-    try { localStorage.setItem('scs-kas-local', JSON.stringify(local)); } catch(e) {}
+    localStorage.setItem('scs-kas-local', JSON.stringify(local));
     kasData = local;
     showToast('💾 Disimpan lokal (belum terhubung Sheets)', '');
     updateSummary(); renderTable(); resetKasForm();
@@ -1283,9 +1276,9 @@ async function hapusKas(id) {
     if (res && res.ok) { showToast('🗑️ Data dihapus', ''); await loadKasData(); }
     else showToast('Gagal menghapus', 'error');
   } else {
-    const local = JSON.parse((function(){try{return localStorage.getItem('scs-kas-local');}catch(e){return null;}})() || '[]');
+    const local = JSON.parse(localStorage.getItem('scs-kas-local')||'[]');
     const updated = local.filter(r => r.ID !== id.toString());
-    try { localStorage.setItem('scs-kas-local', JSON.stringify(updated)); } catch(e) {}
+    localStorage.setItem('scs-kas-local', JSON.stringify(updated));
     kasData = updated;
     updateSummary(); renderTable();
     showToast('🗑️ Data dihapus', '');
@@ -1679,12 +1672,11 @@ async function loadPekerjaData() {
         sel.innerHTML += '<option value="' + nama + '">' + nama + '</option>';
       });
     }
-    // Render absen input table jika halaman absen aktif
-    if (document.getElementById('ab-input-tbody')) {
-      renderAbsenInput();
-    }
+
   }
-} {
+}
+
+function renderPekerjaList() {
   const el = document.getElementById('list-pekerja');
   if (!pekerjaData.length) {
     el.innerHTML = '<div class="empty-state"><div class="empty-icon">👷</div>Belum ada data pekerja.</div>';
@@ -1921,9 +1913,7 @@ async function simpanAbsenBulk() {
   btn.innerHTML = '💾 Simpan Semua'; btn.disabled = false;
   if (sukses > 0) {
     showToast('✅ ' + sukses + ' data absen tersimpan!', 'success');
-    // Auto refresh rekap
     await loadAbsenData();
-    // Pindah ke tab rekap agar user lihat data terupdate
     const tabRekap = document.querySelector('.tab-item[onclick*="rekap"]');
     if (tabRekap) tabRekap.click();
   }
@@ -1937,36 +1927,8 @@ function resetAbsenForm() {
 }
 
 // Init absen date
-try {
-  const abTgl = document.getElementById('ab-tanggal');
-  if (abTgl) abTgl.value = new Date().toISOString().split('T')[0];
-} catch(e) { console.error('Init error:', e); }
-
-// ─── Expose ke window agar onclick di HTML bisa akses ───
-window.showPage        = showPage;
-window.bukacashflow    = bukacashflow;
-window.bukaKas         = bukaKas;
-window.tambahKas       = tambahKas;
-window.hapusKas        = hapusKas;
-window.resetKasForm    = resetKasForm;
-window.renderTable     = renderTable;
-window.loadKasData     = loadKasData;
-window.saveScriptUrl   = saveScriptUrl;
-window.switchAbsenTab  = switchAbsenTab;
-window.loadAbsenData   = loadAbsenData;
-window.renderAbsenTable= renderAbsenTable;
-window.simpanAbsenBulk = simpanAbsenBulk;
-window.renderAbsenInput= renderAbsenInput;
-window.simpanPekerja   = simpanPekerja;
-window.resetPekerjaForm= resetPekerjaForm;
-window.confirmAbsen    = confirmAbsen;
-window.loadSlipGaji    = loadSlipGaji;
-window.cfFilter        = cfFilter;
-window.renderCashFlow  = renderCashFlow;
-window.loadCashFlow    = loadCashFlow;
-window.hitungLembur    = hitungLembur;
-window.hapusFoto       = hapusFoto;
-window.previewFoto     = previewFoto;
+const abTgl = document.getElementById('ab-tanggal');
+if (abTgl) abTgl.value = new Date().toISOString().split('T')[0];
 
 </script>
 </body>
