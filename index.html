@@ -1744,7 +1744,7 @@ function renderPekerjaList() {
       '</div>' +
       '<div style="display:flex;gap:6px;">' +
         '<button onclick="editPekerja(' + i + ')" style="background:rgba(26,115,200,0.1);border:none;color:#1A73C8;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">✏️ Edit</button>' +
-        '<button onclick="hapusPekerja(\"' + nama.replace(/"/g,'&quot;') + '\")" style="background:rgba(198,40,40,0.1);border:none;color:#C62828;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">🗑 Hapus</button>' +
+        '<button onclick="konfirmasiHapusPekerja(' + i + ')" style="background:rgba(198,40,40,0.1);border:none;color:#C62828;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;">🗑 Hapus</button>' +
       '</div>' +
     '</div>';
   }).join('');
@@ -1763,15 +1763,31 @@ function editPekerja(idx) {
   showToast('Data dimuat. Edit lalu klik Simpan.', '');
 }
 
+function konfirmasiHapusPekerja(idx) {
+  const p = pekerjaData[idx];
+  if (!p) return;
+  const nama = p.Nama || p.nama || '';
+  document.getElementById('confirm-msg').innerHTML =
+    '⚠️ Hapus pekerja <strong>' + nama + '</strong>?<br>' +
+    '<span style="font-size:12px;color:#C62828;">Data absen yang sudah ada tidak ikut terhapus.</span>';
+  _confirmResolve = async function(ok) {
+    document.getElementById('confirmModal').classList.remove('active');
+    _confirmResolve = null;
+    if (!ok) return;
+    const res = await apiCall({action:'deletePekerja', nama});
+    if (res && res.ok) {
+      showToast('✅ Pekerja "' + nama + '" dihapus', 'success');
+      await loadPekerjaData();
+    } else {
+      showToast('Gagal menghapus pekerja', 'error');
+    }
+  };
+  document.getElementById('confirmModal').classList.add('active');
+}
+
 async function hapusPekerja(nama) {
-  if (!confirm('Hapus pekerja "' + nama + '"? Data absen tidak ikut terhapus.')) return;
-  const res = await apiCall({action:'deletePekerja', nama});
-  if (res && res.ok) {
-    showToast('✅ Pekerja dihapus', 'success');
-    await loadPekerjaData();
-  } else {
-    showToast('Gagal menghapus', 'error');
-  }
+  // fallback jika dipanggil langsung
+  konfirmasiHapusPekerja(pekerjaData.findIndex(p => (p.Nama||p.nama) === nama));
 }
 
 async function simpanPekerja() {
