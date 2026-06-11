@@ -2033,6 +2033,26 @@ function switchAbsenTab(name, el) {
 // Slip preview moved to Slip Gaji page
 
 // ─── HITUNG LEMBUR ──────────────────────
+function pad2(n) { return String(Math.max(0,n)).padStart(2,'0'); }
+
+function syncJam(tipe, idx) {
+  const h = Math.min(23, Math.max(0, Number(document.getElementById('ab-'+tipe+'-h-'+idx)?.value)||0));
+  const m = Math.min(59, Math.max(0, Number(document.getElementById('ab-'+tipe+'-m-'+idx)?.value)||0));
+  const hidden = document.getElementById('ab-'+tipe+'-'+idx);
+  if (hidden) hidden.value = pad2(h) + ':' + pad2(m);
+  hitungHariDanLembur(idx);
+}
+
+function adjJam(tipe, idx, delta) {
+  const hEl = document.getElementById('ab-'+tipe+'-h-'+idx);
+  if (!hEl) return;
+  let h = (Number(hEl.value)||0) + delta;
+  if (h < 0) h = 23;
+  if (h > 23) h = 0;
+  hEl.value = h;
+  syncJam(tipe, idx);
+}
+
 function hitungHariDanLembur(idx) {
   const dtg = document.getElementById('ab-dtg-' + idx)?.value;
   const plg = document.getElementById('ab-plg-' + idx)?.value;
@@ -2333,8 +2353,30 @@ function renderAbsenInput() {
     return `<tr style="border-bottom:1px solid rgba(26,115,200,0.08);">
       <td style="font-weight:600;color:#0D2444;padding:10px 14px;">${nama}<br><span style="font-size:11px;color:#3A6090;">${formatRp(gaji)}/hari · Lembur ${formatRp(tarif)}/jam</span></td>
       <td style="font-size:12px;color:#3A6090;padding:10px 14px;">${skill}</td>
-      <td style="padding:8px;"><input type="time" id="ab-dtg-${i}" onchange="hitungHariDanLembur(${i})" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="08:00"></td>
-      <td style="padding:8px;"><input type="time" id="ab-plg-${i}" onchange="hitungHariDanLembur(${i})" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="17:00"></td>
+      <td style="padding:8px;">
+        <div style="display:flex;align-items:center;gap:4px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;padding:4px 8px;background:#f8fbff;">
+          <input type="number" id="ab-dtg-h-${i}" min="0" max="23" value="8" oninput="syncJam('dtg',${i})" style="width:32px;border:none;background:transparent;font-size:13px;font-weight:600;color:#0D2444;text-align:center;outline:none;-moz-appearance:textfield;">
+          <span style="color:#3A6090;font-weight:700;">:</span>
+          <input type="number" id="ab-dtg-m-${i}" min="0" max="59" value="0" oninput="syncJam('dtg',${i})" style="width:28px;border:none;background:transparent;font-size:13px;font-weight:600;color:#0D2444;text-align:center;outline:none;-moz-appearance:textfield;">
+          <input type="hidden" id="ab-dtg-${i}" value="08:00">
+          <div style="display:flex;flex-direction:column;gap:1px;margin-left:2px;">
+            <button type="button" onclick="adjJam('dtg',${i},1)" style="background:none;border:none;cursor:pointer;color:#1A73C8;font-size:10px;padding:0;line-height:1;">▲</button>
+            <button type="button" onclick="adjJam('dtg',${i},-1)" style="background:none;border:none;cursor:pointer;color:#1A73C8;font-size:10px;padding:0;line-height:1;">▼</button>
+          </div>
+        </div>
+      </td>
+      <td style="padding:8px;">
+        <div style="display:flex;align-items:center;gap:4px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;padding:4px 8px;background:#f8fbff;">
+          <input type="number" id="ab-plg-h-${i}" min="0" max="23" value="17" oninput="syncJam('plg',${i})" style="width:32px;border:none;background:transparent;font-size:13px;font-weight:600;color:#0D2444;text-align:center;outline:none;-moz-appearance:textfield;">
+          <span style="color:#3A6090;font-weight:700;">:</span>
+          <input type="number" id="ab-plg-m-${i}" min="0" max="59" value="0" oninput="syncJam('plg',${i})" style="width:28px;border:none;background:transparent;font-size:13px;font-weight:600;color:#0D2444;text-align:center;outline:none;-moz-appearance:textfield;">
+          <input type="hidden" id="ab-plg-${i}" value="17:00">
+          <div style="display:flex;flex-direction:column;gap:1px;margin-left:2px;">
+            <button type="button" onclick="adjJam('plg',${i},1)" style="background:none;border:none;cursor:pointer;color:#1A73C8;font-size:10px;padding:0;line-height:1;">▲</button>
+            <button type="button" onclick="adjJam('plg',${i},-1)" style="background:none;border:none;cursor:pointer;color:#1A73C8;font-size:10px;padding:0;line-height:1;">▼</button>
+          </div>
+        </div>
+      </td>
       <td style="padding:8px;text-align:center;"><span id="ab-hari-${i}" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#1A73C8;">1 hari</span></td>
       <td style="padding:8px;text-align:center;"><span id="ab-lemb-disp-${i}" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#1A73C8;">0 jam</span><input type="hidden" id="ab-lemb-${i}" value="0"></td>
       <td style="padding:8px;"><input type="number" id="ab-kasbon-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="0" min="0"></td>
