@@ -830,6 +830,46 @@
           <button class="btn-save" onclick="loadSlipMinggu()" style="height:40px;">🔄 Tampilkan</button>
         </div>
       </div>
+      <!-- Summary Total -->
+      <div id="slip-summary-total" style="display:none;margin-bottom:16px;">
+        <div style="background:linear-gradient(135deg,#0D2444 0%,#1A73C8 100%);border-radius:14px;padding:20px 24px;color:#fff;">
+          <div style="font-family:'Syne',sans-serif;font-size:14px;opacity:0.8;margin-bottom:12px;">📊 TOTAL PENGGAJIAN MINGGU INI</div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:16px;margin-bottom:16px;">
+            <div><div style="font-size:12px;opacity:0.7;">Total Pekerja</div><div style="font-family:'Syne',sans-serif;font-size:22px;font-weight:700;" id="st-jumlah-pekerja">0</div></div>
+            <div><div style="font-size:12px;opacity:0.7;">Total Gaji Pokok</div><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#81C784;" id="st-total-pokok">Rp 0</div></div>
+            <div><div style="font-size:12px;opacity:0.7;">Total Lembur</div><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#81C784;" id="st-total-lembur">Rp 0</div></div>
+            <div><div style="font-size:12px;opacity:0.7;">Total Kasbon</div><div style="font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:#FF8A80;" id="st-total-kasbon">Rp 0</div></div>
+            <div><div style="font-size:12px;opacity:0.7;">💰 Total Dibayar</div><div style="font-family:'Syne',sans-serif;font-size:24px;font-weight:800;" id="st-total-diterima">Rp 0</div></div>
+          </div>
+          <!-- Tabel ringkas per pekerja -->
+          <div style="background:rgba(255,255,255,0.08);border-radius:10px;overflow:hidden;">
+            <table style="width:100%;border-collapse:collapse;font-size:12px;">
+              <thead>
+                <tr style="background:rgba(255,255,255,0.1);">
+                  <th style="padding:8px 12px;text-align:left;font-weight:600;opacity:0.8;">Pekerja</th>
+                  <th style="padding:8px 12px;text-align:center;font-weight:600;opacity:0.8;">Hari</th>
+                  <th style="padding:8px 12px;text-align:right;font-weight:600;opacity:0.8;">Pokok</th>
+                  <th style="padding:8px 12px;text-align:right;font-weight:600;opacity:0.8;">Lembur</th>
+                  <th style="padding:8px 12px;text-align:right;font-weight:600;opacity:0.8;">Kasbon</th>
+                  <th style="padding:8px 12px;text-align:right;font-weight:600;opacity:0.8;">Diterima</th>
+                </tr>
+              </thead>
+              <tbody id="st-tbody"></tbody>
+              <tfoot>
+                <tr style="background:rgba(255,255,255,0.15);font-weight:700;">
+                  <td style="padding:8px 12px;">TOTAL</td>
+                  <td id="st-foot-hari" style="padding:8px 12px;text-align:center;"></td>
+                  <td id="st-foot-pokok" style="padding:8px 12px;text-align:right;color:#81C784;"></td>
+                  <td id="st-foot-lembur" style="padding:8px 12px;text-align:right;color:#81C784;"></td>
+                  <td id="st-foot-kasbon" style="padding:8px 12px;text-align:right;color:#FF8A80;"></td>
+                  <td id="st-foot-diterima" style="padding:8px 12px;text-align:right;font-size:14px;"></td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+      </div>
+
       <div id="slip-container2">
         <div class="empty-state"><div class="empty-icon">🧾</div>Klik Tampilkan untuk melihat slip minggu ini.</div>
       </div>
@@ -1637,6 +1677,8 @@ async function loadSlipMinggu() {
   });
 
   if (!data.length) {
+    const summaryEl2 = document.getElementById('slip-summary-total');
+    if (summaryEl2) summaryEl2.style.display = 'none';
     container.innerHTML = '<div class="empty-state"><div class="empty-icon">🧾</div>Tidak ada data absen untuk minggu ini.</div>';
     return;
   }
@@ -1648,6 +1690,56 @@ async function loadSlipMinggu() {
     if (!byNama[nama]) byNama[nama] = [];
     byNama[nama].push(r);
   });
+
+  // ── Hitung total semua pekerja ─────────────────────────
+  let grandPokok=0, grandLembur=0, grandKasbon=0, grandDiterima=0, grandHari=0;
+  const summaryRows = Object.keys(byNama).map(nama => {
+    const rows2  = byNama[nama];
+    const pk2    = pekerjaData.find(p => (p.Nama||p.nama) === nama) || {};
+    const gaji2  = Number(pk2.GajiHari  || pk2.gajiHari  || 0);
+    const tarif2 = Number(pk2.LemburJam || pk2.lemburJam || 0);
+    let h2=0, l2=0, k2=0;
+    rows2.forEach(r => {
+      h2 += Number(r.HariKerja||r.hariKerja||0);
+      l2 += Number(r.Lembur||r.lembur||0);
+      k2 += Number(r.Kasbon||r.kasbon||0);
+    });
+    const p2 = gaji2 * h2;
+    const lr2 = tarif2 * l2;
+    const d2  = p2 + lr2 - k2;
+    grandHari     += h2;
+    grandPokok    += p2;
+    grandLembur   += lr2;
+    grandKasbon   += k2;
+    grandDiterima += d2;
+    return { nama, h2, p2, lr2, k2, d2 };
+  });
+
+  // Render summary card
+  const summaryEl = document.getElementById('slip-summary-total');
+  if (summaryEl) {
+    summaryEl.style.display = 'block';
+    document.getElementById('st-jumlah-pekerja').textContent = summaryRows.length + ' orang';
+    document.getElementById('st-total-pokok').textContent    = formatRp(grandPokok);
+    document.getElementById('st-total-lembur').textContent   = formatRp(grandLembur);
+    document.getElementById('st-total-kasbon').textContent   = formatRp(grandKasbon);
+    document.getElementById('st-total-diterima').textContent = formatRp(grandDiterima);
+    document.getElementById('st-foot-hari').textContent      = grandHari;
+    document.getElementById('st-foot-pokok').textContent     = formatRp(grandPokok);
+    document.getElementById('st-foot-lembur').textContent    = formatRp(grandLembur);
+    document.getElementById('st-foot-kasbon').textContent    = formatRp(grandKasbon);
+    document.getElementById('st-foot-diterima').textContent  = formatRp(grandDiterima);
+    document.getElementById('st-tbody').innerHTML = summaryRows.map(s =>
+      '<tr style="border-top:1px solid rgba(255,255,255,0.08);">' +
+        '<td style="padding:7px 12px;font-weight:600;">' + s.nama + '</td>' +
+        '<td style="padding:7px 12px;text-align:center;">' + s.h2 + '</td>' +
+        '<td style="padding:7px 12px;text-align:right;color:#81C784;">' + formatRp(s.p2) + '</td>' +
+        '<td style="padding:7px 12px;text-align:right;color:#81C784;">' + formatRp(s.lr2) + '</td>' +
+        '<td style="padding:7px 12px;text-align:right;color:#FF8A80;">' + formatRp(s.k2) + '</td>' +
+        '<td style="padding:7px 12px;text-align:right;font-weight:700;">' + formatRp(s.d2) + '</td>' +
+      '</tr>'
+    ).join('');
+  }
 
   container.innerHTML = Object.keys(byNama).map(nama => {
     const rows  = byNama[nama];
@@ -1783,6 +1875,56 @@ async function loadSlipGaji() {
   if (!Object.keys(byNama).length) {
     container.innerHTML = '<div class="empty-state"><div class="empty-icon">🧾</div>Tidak ada data untuk periode ini.</div>';
     return;
+  }
+
+  // ── Hitung total semua pekerja ─────────────────────────
+  let grandPokok=0, grandLembur=0, grandKasbon=0, grandDiterima=0, grandHari=0;
+  const summaryRows = Object.keys(byNama).map(nama => {
+    const rows2  = byNama[nama];
+    const pk2    = pekerjaData.find(p => (p.Nama||p.nama) === nama) || {};
+    const gaji2  = Number(pk2.GajiHari  || pk2.gajiHari  || 0);
+    const tarif2 = Number(pk2.LemburJam || pk2.lemburJam || 0);
+    let h2=0, l2=0, k2=0;
+    rows2.forEach(r => {
+      h2 += Number(r.HariKerja||r.hariKerja||0);
+      l2 += Number(r.Lembur||r.lembur||0);
+      k2 += Number(r.Kasbon||r.kasbon||0);
+    });
+    const p2 = gaji2 * h2;
+    const lr2 = tarif2 * l2;
+    const d2  = p2 + lr2 - k2;
+    grandHari     += h2;
+    grandPokok    += p2;
+    grandLembur   += lr2;
+    grandKasbon   += k2;
+    grandDiterima += d2;
+    return { nama, h2, p2, lr2, k2, d2 };
+  });
+
+  // Render summary card
+  const summaryEl = document.getElementById('slip-summary-total');
+  if (summaryEl) {
+    summaryEl.style.display = 'block';
+    document.getElementById('st-jumlah-pekerja').textContent = summaryRows.length + ' orang';
+    document.getElementById('st-total-pokok').textContent    = formatRp(grandPokok);
+    document.getElementById('st-total-lembur').textContent   = formatRp(grandLembur);
+    document.getElementById('st-total-kasbon').textContent   = formatRp(grandKasbon);
+    document.getElementById('st-total-diterima').textContent = formatRp(grandDiterima);
+    document.getElementById('st-foot-hari').textContent      = grandHari;
+    document.getElementById('st-foot-pokok').textContent     = formatRp(grandPokok);
+    document.getElementById('st-foot-lembur').textContent    = formatRp(grandLembur);
+    document.getElementById('st-foot-kasbon').textContent    = formatRp(grandKasbon);
+    document.getElementById('st-foot-diterima').textContent  = formatRp(grandDiterima);
+    document.getElementById('st-tbody').innerHTML = summaryRows.map(s =>
+      '<tr style="border-top:1px solid rgba(255,255,255,0.08);">' +
+        '<td style="padding:7px 12px;font-weight:600;">' + s.nama + '</td>' +
+        '<td style="padding:7px 12px;text-align:center;">' + s.h2 + '</td>' +
+        '<td style="padding:7px 12px;text-align:right;color:#81C784;">' + formatRp(s.p2) + '</td>' +
+        '<td style="padding:7px 12px;text-align:right;color:#81C784;">' + formatRp(s.lr2) + '</td>' +
+        '<td style="padding:7px 12px;text-align:right;color:#FF8A80;">' + formatRp(s.k2) + '</td>' +
+        '<td style="padding:7px 12px;text-align:right;font-weight:700;">' + formatRp(s.d2) + '</td>' +
+      '</tr>'
+    ).join('');
   }
 
   container.innerHTML = Object.keys(byNama).map(nama => {
