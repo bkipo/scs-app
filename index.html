@@ -908,7 +908,7 @@
 // ═══════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════
-let SCRIPT_URL = localStorage.getItem('scs-script-url') || 'https://script.google.com/macros/s/AKfycbwrrA2n5usa4nsgZzCor38xMgc05CwIJjo9dKUMwEg-hiadQSL-eEx-Q32ChCWG1dZQNA/exec';
+let SCRIPT_URL = localStorage.getItem('scs-script-url') || 'https://script.google.com/macros/s/AKfycbw3ybcvd0a2fmJzaBpSO2Psr3VTJI3_29ItnHVPI-dYM_Qe-CZzyR3Ykj8lhASFnZW_LQ/exec';
 let kasData    = [];
 
 // ─── SETUP BANNER ───────────────────────
@@ -1056,6 +1056,16 @@ async function apiPost(params) {
 
 // ─── FORMAT ─────────────────────────────
 function formatRp(n) { return 'Rp ' + Number(n).toLocaleString('id-ID'); }
+function formatJam(j) {
+  if (!j) return '-';
+  const s = j.toString();
+  // Handle ISO format 1899-12-30T15:00:00.000Z
+  if (s.includes('T')) {
+    const t = s.split('T')[1];
+    return t ? t.substring(0,5) : '-';
+  }
+  return s.substring(0,5);
+}
 function formatDate(d) {
   if (!d) return '-';
   try {
@@ -1723,8 +1733,8 @@ function renderAbsenTable() {
       '<td style="font-weight:600;padding:10px 14px;">' + (r.Nama||r.nama||'-') + '</td>' +
       '<td style="font-size:12px;color:#3A6090;padding:10px 14px;">' + (r.Project||r.project||'-') + '</td>' +
       '<td style="font-size:12px;color:#3A6090;padding:10px 14px;">' + (r.Skill||r.skill||'-') + '</td>' +
-      '<td style="font-size:12px;padding:10px 14px;">' + (r.JamDtg||r.jamDtg||'-') + '</td>' +
-      '<td style="font-size:12px;padding:10px 14px;">' + (r.JamPlg||r.jamPlg||'-') + '</td>' +
+      '<td style="font-size:12px;padding:10px 14px;">' + formatJam(r.JamDtg||r.jamDtg) + '</td>' +
+      '<td style="font-size:12px;padding:10px 14px;">' + formatJam(r.JamPlg||r.jamPlg) + '</td>' +
       '<td style="font-size:12px;text-align:center;padding:10px 14px;">' + lembur + '</td>' +
       '<td style="font-size:12px;text-align:center;padding:10px 14px;">' + hari + '</td>' +
       '<td class="td-amount masuk" style="padding:10px 14px;">' + formatRp(pokok) + '</td>' +
