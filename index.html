@@ -1564,7 +1564,12 @@ function switchAbsenTab(name, el) {
   document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
   el.classList.add('active');
   document.getElementById('tab-' + name).classList.add('active');
-  if (name === 'rekap') loadAbsenData();
+  if (name === 'rekap') {
+    // Auto set filter tanggal dari input absen
+    const tgl = document.getElementById('ab-tanggal').value;
+    if (tgl) document.getElementById('ab-filter-tgl').value = tgl;
+    loadAbsenData();
+  }
   if (name === 'pekerja') loadPekerjaData();
 }
 
@@ -1727,40 +1732,60 @@ function renderAbsenTable() {
   const fTgl  = document.getElementById('ab-filter-tgl').value;
   let filtered = absenData.filter(r => {
     const nama = (r.Nama||r.nama||'').toLowerCase();
-    const tgl  = (r.Tanggal||r.tanggal||'').toString();
-    return (!fNama || nama.includes(fNama)) && (!fTgl || tgl.includes(fTgl));
+    const tgl  = (r.Tanggal||r.tanggal||'').toString().substring(0,10);
+    return (!fNama || nama.includes(fNama)) && (!fTgl || tgl === fTgl);
   });
   document.getElementById('ab-count').textContent = filtered.length + ' data';
   if (!filtered.length) {
-    tbody.innerHTML = '<tr><td colspan="14"><div class="empty-state"><div class="empty-icon">🕐</div>Belum ada data.</div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="14"><div class="empty-state"><div class="empty-icon">🕐</div>Belum ada data untuk tanggal ini.</div></td></tr>';
     return;
   }
-  tbody.innerHTML = filtered.map((r,i) => {
+
+  // Hitung total
+  let totPokok=0, totLembur=0, totKasbon=0, totDiterima=0;
+
+  const rows = filtered.map((r,i) => {
     const gaji    = Number(r.GajiHari||r.gajiHari||r.gaji||0);
-    const hari    = Number(r.HariKerja||r.hariKerja||1);
+    const hari    = Number(r.HariKerja||r.hariKerja||0);
     const lembur  = Number(r.Lembur||r.lembur||0);
     const tarifLmb= Number(r.TarifLembur||r.tarifLembur||0);
     const kasbon  = Number(r.Kasbon||r.kasbon||0);
+    const status  = r.Status||r.status||'Hadir';
     const pokok   = gaji * hari;
     const lemburRp= lembur * tarifLmb;
     const diterima= pokok + lemburRp - kasbon;
-    return '<tr>' +
-      '<td style="color:#3A6090;font-size:12px;">' + (i+1) + '</td>' +
-      '<td style="white-space:nowrap;">' + formatDate(r.Tanggal||r.tanggal) + '</td>' +
-      '<td style="font-weight:600;">' + (r.Nama||r.nama||'-') + '</td>' +
-      '<td style="font-size:12px;color:#3A6090;">' + (r.Project||r.project||'-') + '</td>' +
-      '<td style="font-size:12px;color:#3A6090;">' + (r.Skill||r.skill||'-') + '</td>' +
-      '<td style="font-size:12px;">' + (r.JamDtg||r.jamDtg||'-') + '</td>' +
-      '<td style="font-size:12px;">' + (r.JamPlg||r.jamPlg||'-') + '</td>' +
-      '<td style="font-size:12px;text-align:center;">' + lembur + '</td>' +
-      '<td style="font-size:12px;text-align:center;">' + hari + '</td>' +
-      '<td class="td-amount masuk">' + formatRp(pokok) + '</td>' +
-      '<td class="td-amount masuk">' + formatRp(lemburRp) + '</td>' +
-      '<td class="td-amount keluar">' + formatRp(kasbon) + '</td>' +
-      '<td class="td-amount" style="color:#1A73C8;font-weight:700;">' + formatRp(diterima) + '</td>' +
-      '<td style="font-size:12px;color:#3A6090;">' + (r.Keterangan||r.keterangan||'-') + '</td>' +
+    totPokok += pokok; totLembur += lemburRp; totKasbon += kasbon; totDiterima += diterima;
+    const colors = {'Hadir':'#D4EDDA','Sakit':'#FFF3CD','Izin':'#D1ECF1','Tidak Masuk':'#F8D7DA'};
+    const bgColor = colors[status] || '#fff';
+    return '<tr style="background:' + bgColor + '">' +
+      '<td style="color:#3A6090;font-size:12px;padding:10px 14px;">' + (i+1) + '</td>' +
+      '<td style="white-space:nowrap;padding:10px 14px;">' + formatDate(r.Tanggal||r.tanggal) + '</td>' +
+      '<td style="font-weight:600;padding:10px 14px;">' + (r.Nama||r.nama||'-') + '</td>' +
+      '<td style="font-size:12px;color:#3A6090;padding:10px 14px;">' + (r.Project||r.project||'-') + '</td>' +
+      '<td style="font-size:12px;color:#3A6090;padding:10px 14px;">' + (r.Skill||r.skill||'-') + '</td>' +
+      '<td style="font-size:12px;padding:10px 14px;">' + (r.JamDtg||r.jamDtg||'-') + '</td>' +
+      '<td style="font-size:12px;padding:10px 14px;">' + (r.JamPlg||r.jamPlg||'-') + '</td>' +
+      '<td style="font-size:12px;text-align:center;padding:10px 14px;">' + lembur + '</td>' +
+      '<td style="font-size:12px;text-align:center;padding:10px 14px;">' + hari + '</td>' +
+      '<td class="td-amount masuk" style="padding:10px 14px;">' + formatRp(pokok) + '</td>' +
+      '<td class="td-amount masuk" style="padding:10px 14px;">' + formatRp(lemburRp) + '</td>' +
+      '<td class="td-amount keluar" style="padding:10px 14px;">' + formatRp(kasbon) + '</td>' +
+      '<td class="td-amount" style="color:#1A73C8;font-weight:700;padding:10px 14px;">' + formatRp(diterima) + '</td>' +
+      '<td style="font-size:12px;color:#3A6090;padding:10px 14px;">' + (r.Keterangan||r.keterangan||'-') + '</td>' +
       '</tr>';
   }).join('');
+
+  // Total row
+  const totalRow = '<tr style="background:#0D2444;">' +
+    '<td colspan="9" style="color:#fff;font-weight:700;font-size:13px;padding:10px 14px;">TOTAL (' + filtered.length + ' pekerja)</td>' +
+    '<td class="td-amount" style="color:#81C784;font-weight:700;padding:10px 14px;">' + formatRp(totPokok) + '</td>' +
+    '<td class="td-amount" style="color:#81C784;font-weight:700;padding:10px 14px;">' + formatRp(totLembur) + '</td>' +
+    '<td class="td-amount" style="color:#FF8A80;font-weight:700;padding:10px 14px;">' + formatRp(totKasbon) + '</td>' +
+    '<td class="td-amount" style="color:#82B1FF;font-weight:700;padding:10px 14px;">' + formatRp(totDiterima) + '</td>' +
+    '<td style="padding:10px 14px;"></td>' +
+    '</tr>';
+
+  tbody.innerHTML = rows + totalRow;
 }
 
 // ─── RENDER BULK INPUT ──────────────────
@@ -1808,33 +1833,47 @@ async function simpanAbsenBulk() {
   btn.innerHTML = '<span class="spinner"></span> Menyimpan...';
   btn.disabled = true;
 
-  let sukses = 0, gagal = 0;
+  // Kumpulkan semua data dulu
+  const rows = [];
   for (let i = 0; i < pekerjaData.length; i++) {
     const p      = pekerjaData[i];
-    const nama   = p.Nama || p.nama || '';
-    const skill  = p.Skill || p.skill || '';
-    const gaji   = Number(p.GajiHari || p.gajiHari || p.gaji || 0);
-    const tarif  = Number(p.LemburJam || p.lemburJam || p.lembur || 0);
     const status = document.getElementById('ab-status-' + i)?.value || 'Hadir';
-    const jamDtg = document.getElementById('ab-dtg-' + i)?.value || '';
-    const jamPlg = document.getElementById('ab-plg-' + i)?.value || '';
-    const lembur = Number(document.getElementById('ab-lemb-' + i)?.value) || 0;
-    const kasbon = Number(document.getElementById('ab-kasbon-' + i)?.value) || 0;
-    const ket    = document.getElementById('ab-ket-' + i)?.value || '';
-    const hari   = status === 'Hadir' ? 1 : 0;
+    rows.push({
+      nama:        p.Nama || p.nama || '',
+      skill:       p.Skill || p.skill || '',
+      gaji:        Number(p.GajiHari || p.gajiHari || p.gaji || 0),
+      tarifLembur: Number(p.LemburJam || p.lemburJam || p.lembur || 0),
+      jamDtg:      document.getElementById('ab-dtg-' + i)?.value || '',
+      jamPlg:      document.getElementById('ab-plg-' + i)?.value || '',
+      lembur:      Number(document.getElementById('ab-lemb-' + i)?.value) || 0,
+      kasbon:      Number(document.getElementById('ab-kasbon-' + i)?.value) || 0,
+      keterangan:  document.getElementById('ab-ket-' + i)?.value || '',
+      hariKerja:   status === 'Hadir' ? 1 : 0,
+      status:      status
+    });
+  }
 
+  // Kirim satu per satu tapi dengan delay kecil agar callback tidak bentrok
+  let sukses = 0, gagal = 0;
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    // Delay 300ms antar request agar JSONP tidak bentrok
+    if (i > 0) await new Promise(res => setTimeout(res, 300));
     const res = await apiCall({
-      action:'addAbsenSlip', tanggal, nama, project, skill,
-      gaji, jamDtg, jamPlg, lembur, tarifLembur: tarif,
-      kasbon, hariKerja: hari, status, keterangan: ket
+      action:'addAbsenSlip', tanggal, project,
+      nama: r.nama, skill: r.skill, gaji: r.gaji,
+      jamDtg: r.jamDtg, jamPlg: r.jamPlg,
+      lembur: r.lembur, tarifLembur: r.tarifLembur,
+      kasbon: r.kasbon, hariKerja: r.hariKerja,
+      status: r.status, keterangan: r.keterangan
     });
     if (res && res.ok) sukses++; else gagal++;
+    // Update progress
+    btn.innerHTML = '<span class="spinner"></span> ' + (i+1) + '/' + rows.length + ' disimpan...';
   }
 
   btn.innerHTML = '💾 Simpan Semua'; btn.disabled = false;
-  if (sukses > 0) {
-    showToast('✅ ' + sukses + ' data absen tersimpan!', 'success');
-  }
+  if (sukses > 0) showToast('✅ ' + sukses + ' data absen tersimpan!', 'success');
   if (gagal > 0) showToast(gagal + ' data gagal', 'error');
 }
 
