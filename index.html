@@ -767,6 +767,7 @@
                 <th>Skill</th>
                 <th style="min-width:90px;">Jam Masuk</th>
                 <th style="min-width:90px;">Jam Pulang</th>
+                <th style="min-width:70px;">Hari</th>
                 <th style="min-width:80px;">Lembur (Jam)</th>
                 <th style="min-width:110px;">Kasbon (Rp)</th>
                 <th>Status</th>
@@ -2024,18 +2025,66 @@ function switchAbsenTab(name, el) {
 // Slip preview moved to Slip Gaji page
 
 // ─── HITUNG LEMBUR ──────────────────────
-function hitungLembur(idx) {
+function hitungHariDanLembur(idx) {
   const dtg = document.getElementById('ab-dtg-' + idx)?.value;
   const plg = document.getElementById('ab-plg-' + idx)?.value;
   if (!dtg || !plg) return;
-  const [dh,dm] = dtg.split(':').map(Number);
-  const [ph,pm] = plg.split(':').map(Number);
-  const totalMenit = (ph*60+pm) - (dh*60+dm);
-  const jamKerja = totalMenit / 60;
-  const lembur = Math.max(0, Math.round((jamKerja - 8) * 2) / 2);
-  const el = document.getElementById('ab-lemb-' + idx);
-  if (el) el.value = lembur;
+
+  const toMenit = t => { const [h,m] = t.split(':').map(Number); return h*60+m; };
+  const mDtg = toMenit(dtg);
+  const mPlg = toMenit(plg);
+  if (mPlg <= mDtg) return;
+
+  const JAM_MASUK_NORMAL = 8*60;   // 08:00
+  const JAM_PULANG_NORMAL= 17*60;  // 17:00
+  const JAM_TENGAH       = 12*60;  // 12:00
+
+  let hari   = 0;
+  let lembur = 0;
+
+  // Full hari: masuk ≤ 08:00 DAN pulang ≥ 17:00
+  if (mDtg <= JAM_MASUK_NORMAL && mPlg >= JAM_PULANG_NORMAL) {
+    hari = 1;
+    // Lembur: setiap jam lebih dari jam 17:00, hanya jika full hari
+    lembur = Math.round(((mPlg - JAM_PULANG_NORMAL) / 60) * 2) / 2;
+  }
+  // Setengah hari pagi: masuk ≤ 08:00 & pulang antara 12:00–17:00
+  else if (mDtg <= JAM_MASUK_NORMAL && mPlg >= JAM_TENGAH && mPlg < JAM_PULANG_NORMAL) {
+    hari = 0.5;
+    lembur = 0;
+  }
+  // Setengah hari siang: masuk antara 12:00–17:00 & pulang ≥ 17:00
+  else if (mDtg >= JAM_TENGAH && mDtg < JAM_PULANG_NORMAL && mPlg >= JAM_PULANG_NORMAL) {
+    hari = 0.5;
+    lembur = 0; // setengah hari tidak dihitung lembur
+  }
+  // Kasus lain (misal masuk & pulang sebelum jam 12) → 0.5 hari jika kerja ≥ 3 jam
+  else {
+    const jamKerja = (mPlg - mDtg) / 60;
+    hari   = jamKerja >= 3 ? 0.5 : 0;
+    lembur = 0;
+  }
+
+  const elLembur = document.getElementById('ab-lemb-' + idx);
+  if (elLembur) elLembur.value = lembur;
+
+  // Update status display jika ada
+  const elHari = document.getElementById('ab-hari-' + idx);
+  if (elHari) elHari.textContent = hari + ' hari';
+
+  // Simpan hari ke hidden field
+  let elHariInput = document.getElementById('ab-harikerja-' + idx);
+  if (!elHariInput) {
+    elHariInput = document.createElement('input');
+    elHariInput.type = 'hidden';
+    elHariInput.id   = 'ab-harikerja-' + idx;
+    document.getElementById('ab-input-tbody')?.appendChild(elHariInput);
+  }
+  elHariInput.value = hari;
 }
+
+// Alias lama
+function hitungLembur(idx) { hitungHariDanLembur(idx); }
 
 // ─── PEKERJA ────────────────────────────
 function onPekerjaChange() {
@@ -2265,8 +2314,9 @@ function renderAbsenInput() {
     return `<tr style="border-bottom:1px solid rgba(26,115,200,0.08);">
       <td style="font-weight:600;color:#0D2444;padding:10px 14px;">${nama}<br><span style="font-size:11px;color:#3A6090;">${formatRp(gaji)}/hari · Lembur ${formatRp(tarif)}/jam</span></td>
       <td style="font-size:12px;color:#3A6090;padding:10px 14px;">${skill}</td>
-      <td style="padding:8px;"><input type="time" id="ab-dtg-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="07:00"></td>
-      <td style="padding:8px;"><input type="time" id="ab-plg-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="16:00"></td>
+      <td style="padding:8px;"><input type="time" id="ab-dtg-${i}" onchange="hitungHariDanLembur(${i})" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="08:00"></td>
+      <td style="padding:8px;"><input type="time" id="ab-plg-${i}" onchange="hitungHariDanLembur(${i})" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="17:00"></td>
+      <td style="padding:8px;text-align:center;"><span id="ab-hari-${i}" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#1A73C8;">1 hari</span></td>
       <td style="padding:8px;"><input type="number" id="ab-lemb-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="0" min="0" step="0.5"></td>
       <td style="padding:8px;"><input type="number" id="ab-kasbon-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="0" min="0"></td>
       <td style="padding:8px;">
@@ -2333,7 +2383,19 @@ async function simpanAbsenBulk() {
       lembur:      Number(document.getElementById('ab-lemb-' + i)?.value) || 0,
       kasbon:      Number(document.getElementById('ab-kasbon-' + i)?.value) || 0,
       keterangan:  document.getElementById('ab-ket-' + i)?.value || '',
-      hariKerja:   status === 'Hadir' ? 1 : 0,
+      hariKerja:   (function() {
+        if (status !== 'Hadir') return 0;
+        const hEl = document.getElementById('ab-harikerja-' + i);
+        if (hEl && hEl.value !== '') return Number(hEl.value);
+        // fallback: hitung dari jam
+        const dtg = document.getElementById('ab-dtg-' + i)?.value || '08:00';
+        const plg = document.getElementById('ab-plg-' + i)?.value || '17:00';
+        const toM = t => { const [h,m]=t.split(':').map(Number); return h*60+m; };
+        const mD=toM(dtg), mP=toM(plg);
+        if (mD<=480 && mP>=1020) return 1;
+        if ((mD<=480 && mP>=720) || (mD>=720 && mP>=1020)) return 0.5;
+        return 0;
+      })(),
       status:      status
     });
   }
