@@ -2,6 +2,9 @@
 <html lang="id">
 <head>
 <meta charset="UTF-8">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SCS — Shine Creative Solution</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -950,10 +953,17 @@
 
 </div><!-- /wrap -->
 <script>
+window.onerror = function(msg, src, line, col, err) {
+  document.title = 'ERR L'+line+': '+msg;
+  console.error('GLOBAL ERROR at line '+line+': '+msg);
+};
 // ═══════════════════════════════════════
 //  CONFIG
 // ═══════════════════════════════════════
-let SCRIPT_URL = localStorage.getItem('scs-script-url') || 'https://script.google.com/macros/s/AKfycbz5_0O12Y8Ty2z2cswTGOB7lM7JRePRbgn2gBa8deUIDzDisgPVRmEEq-8R-6-umigy2Q/exec';
+let SCRIPT_URL = (function() {
+  try { return localStorage.getItem('scs-script-url') || 'https://script.google.com/macros/s/AKfycbz5_0O12Y8Ty2z2cswTGOB7lM7JRePRbgn2gBa8deUIDzDisgPVRmEEq-8R-6-umigy2Q/exec'; }
+  catch(e) { return 'https://script.google.com/macros/s/AKfycbz5_0O12Y8Ty2z2cswTGOB7lM7JRePRbgn2gBa8deUIDzDisgPVRmEEq-8R-6-umigy2Q/exec'; }
+})();
 let kasData    = [];
 
 // ─── SETUP BANNER ───────────────────────
@@ -969,7 +979,7 @@ function saveScriptUrl() {
     showToast('URL tidak valid. Pastikan dari Google Apps Script.', 'error'); return;
   }
   SCRIPT_URL = val;
-  localStorage.setItem('scs-script-url', SCRIPT_URL);
+  try { localStorage.setItem('scs-script-url', SCRIPT_URL); } catch(e) {}
   document.getElementById('connected-badge').style.display = 'flex';
   showToast('✅ Berhasil terhubung ke Google Sheets!', 'success');
   loadKasData();
@@ -1144,7 +1154,7 @@ function updateSummary() {
 async function loadKasData() {
   if (!SCRIPT_URL) {
     const key = 'scs-kas-local-' + activeKas;
-    kasData = JSON.parse(localStorage.getItem(key) || '[]');
+    kasData = JSON.parse((function(){try{return localStorage.getItem(key);}catch(e){return null;}})() || '[]');
     updateSummary(); renderTable(); return;
   }
   showToast('🔄 Memuat data ' + activeKas + '...');
@@ -1253,7 +1263,7 @@ async function tambahKas() {
     // fallback localStorage
     const local = JSON.parse(localStorage.getItem('scs-kas-local')||'[]');
     local.unshift({ID:Date.now().toString(),Tanggal:tanggal,Uraian:uraian,Kategori:kategori,Jenis:jenis,Jumlah:jumlah,Nota:nota,OlehUser:oleh});
-    localStorage.setItem('scs-kas-local', JSON.stringify(local));
+    try { localStorage.setItem('scs-kas-local', JSON.stringify(local)); } catch(e) {}
     kasData = local;
     showToast('💾 Disimpan lokal (belum terhubung Sheets)', '');
     updateSummary(); renderTable(); resetKasForm();
