@@ -553,6 +553,14 @@
   border: 1px solid #C3E6CB; padding: 5px 12px;
   border-radius: 20px; font-size: 12px; font-weight: 600; margin-top: 8px;
 }
+
+  /* Force 24h time format */
+  input[type="time"] {
+    -webkit-appearance: none;
+  }
+  input[type="time"]::-webkit-datetime-edit-ampm-field {
+    display: none;
+  }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
@@ -2065,12 +2073,23 @@ function hitungHariDanLembur(idx) {
     lembur = 0;
   }
 
+  // Update hidden input lembur
   const elLembur = document.getElementById('ab-lemb-' + idx);
   if (elLembur) elLembur.value = lembur;
 
-  // Update status display jika ada
+  // Update display lembur
+  const elLemburDisp = document.getElementById('ab-lemb-disp-' + idx);
+  if (elLemburDisp) {
+    elLemburDisp.textContent = lembur > 0 ? lembur + ' jam' : '0 jam';
+    elLemburDisp.style.color = lembur > 0 ? '#C87000' : '#3A6090';
+  }
+
+  // Update display hari
   const elHari = document.getElementById('ab-hari-' + idx);
-  if (elHari) elHari.textContent = hari + ' hari';
+  if (elHari) {
+    elHari.textContent = hari + ' hari';
+    elHari.style.color = hari === 1 ? '#1A73C8' : hari === 0.5 ? '#C87000' : '#C62828';
+  }
 
   // Simpan hari ke hidden field
   let elHariInput = document.getElementById('ab-harikerja-' + idx);
@@ -2317,7 +2336,7 @@ function renderAbsenInput() {
       <td style="padding:8px;"><input type="time" id="ab-dtg-${i}" onchange="hitungHariDanLembur(${i})" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="08:00"></td>
       <td style="padding:8px;"><input type="time" id="ab-plg-${i}" onchange="hitungHariDanLembur(${i})" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="17:00"></td>
       <td style="padding:8px;text-align:center;"><span id="ab-hari-${i}" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#1A73C8;">1 hari</span></td>
-      <td style="padding:8px;"><input type="number" id="ab-lemb-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="0" min="0" step="0.5"></td>
+      <td style="padding:8px;text-align:center;"><span id="ab-lemb-disp-${i}" style="font-family:'Syne',sans-serif;font-size:13px;font-weight:700;color:#1A73C8;">0 jam</span><input type="hidden" id="ab-lemb-${i}" value="0"></td>
       <td style="padding:8px;"><input type="number" id="ab-kasbon-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;" value="0" min="0"></td>
       <td style="padding:8px;">
         <select id="ab-status-${i}" style="width:100%;padding:7px;border:1px solid rgba(26,115,200,0.2);border-radius:6px;font-size:13px;">
